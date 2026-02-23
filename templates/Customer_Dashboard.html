@@ -244,7 +244,34 @@ body{
     
 </div>
 
+
 <script>
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+
+// open sidebar
+function openSidebar() {
+    sidebar.classList.add("active");
+    overlay.classList.add("active");
+}
+
+// close sidebar
+function closeSidebar() {
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+}
+
+// overlay click -> close sidebar
+overlay.addEventListener("click", closeSidebar);
+
+// outside click (optional advanced)
+document.addEventListener("click", function(e) {
+    if (!sidebar.contains(e.target) && !e.target.closest(".menu-btn")) {
+        closeSidebar();
+    }
+});
+
+    
 function toggleSidebar(){
     document.getElementById("sidebar").classList.toggle("active");
 }
