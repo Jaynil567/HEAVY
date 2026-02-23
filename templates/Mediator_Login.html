@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mediator Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+    font-family:'Poppins',sans-serif;
+    min-height:100vh;
+    background:linear-gradient(135deg,#1d2671,#c33764);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* CARD */
+.login-card{
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(12px);
+    border-radius:20px;
+    padding:35px;
+    color:#fff;
+    width:100%;
+    max-width:400px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.3);
+}
+
+/* INPUT */
+.form-control{
+    border-radius:30px;
+    padding-left:50px;
+    height:45px;
+}
+
+/* ICON INSIDE INPUT */
+.input-icon{
+    position:absolute;
+    top:50%;
+    left:18px;
+    transform:translateY(-50%);
+    color:#6c757d;
+}
+
+/* BUTTON */
+.btn-custom{
+    border-radius:30px;
+    padding:10px;
+    font-weight:500;
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-card">
+
+    <!-- HEADER -->
+    <div class="text-center mb-4">
+        <i class="bi bi-person-badge-fill fs-1"></i>
+        <h3 class="fw-bold mt-2">Mediator Login</h3>
+        <p class="small text-light">Authorized access only</p>
+    </div>
+
+    {% if msg %}
+<div class="alert alert-danger text-center py-2">
+    {{ msg }}
+</div>
+{% endif %}
+
+    <!-- FORM (NO JS VALIDATION) -->
+    <form method="post" action="/Mediator_Login">
+
+        <!-- Username -->
+        <div class="mb-3 position-relative">
+            <i class="bi bi-person input-icon"></i>
+            <input type="text"
+                   name="MUN"
+                   class="form-control"
+                   placeholder="Username" required>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3 position-relative">
+            <i class="bi bi-lock input-icon"></i>
+            <input type="password"
+                   name="MP"
+                   class="form-control"
+                   placeholder="Password" required>
+        </div>
+
+        <div class="text-end mb-3 small">
+            <a href="/Med_Forgot_Password" class="text-warning">Forgot password?</a>
+        </div>
+
+        <!-- LOGIN BUTTON -->
+        <button type="submit" class="btn btn-warning btn-custom w-100 text-dark mb-3">
+            Login
+        </button>
+
+        <!-- BACK -->
+        <p class="text-center small">
+            <a href="/" class="text-light text-decoration-none">
+                ← Back to Home
+            </a>
+        </p>
+
+    </form>
+</div>
+
+</body>
+</html>

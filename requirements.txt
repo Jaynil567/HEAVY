@@ -1,0 +1,6 @@
+flask
+mysql-connector-python
+gspread
+google-auth
+cloudinary
+gunicorn

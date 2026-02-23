@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Customer Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    font-family:'Inter',sans-serif;
+    background:#0f172a;
+    color:#e5e7eb;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:230px;
+    height:100vh;
+    background:linear-gradient(180deg,#020617,#020617);
+    padding:20px;
+}
+.sidebar h4{
+    color:#facc15;
+    margin-bottom:30px;
+    font-weight:700;
+}
+.sidebar a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px;
+    color:#cbd5f5;
+    text-decoration:none;
+    border-radius:8px;
+    margin-bottom:6px;
+    font-size:14px;
+}
+.sidebar a:hover,
+.sidebar a.active{
+    background:#1e293b;
+    color:#ffffff;
+}
+
+/* ===== TOPBAR ===== */
+.topbar{
+    height:56px;
+    margin-left:230px;
+    background:#020617;
+    border-bottom:1px solid #1e293b;
+    display:flex;
+    align-items:center;
+    padding:0 18px;
+}
+.menu-btn{
+    font-size:1.5rem;
+    cursor:pointer;
+    display:none;
+    color:#f8fafc;
+}
+.top-title{
+    font-weight:600;
+    font-size:16px;
+}
+
+/* ===== PROFILE ===== */
+.profile{
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+}
+.profile-name{
+    font-size:14px;
+    font-weight:600;
+}
+.profile-role{
+    font-size:11px;
+    color:#94a3b8;
+}
+.avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#6366f1,#22d3ee);
+    color:#020617;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    margin-left:10px;
+}
+
+/* ===== MAIN ===== */
+.main{
+    margin-left:230px;
+    padding:24px;
+}
+
+/* ===== STATS CARDS ===== */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+    margin-bottom:24px;
+}
+.stat-card{
+    background:#020617;
+    border:1px solid #1e293b;
+    border-radius:14px;
+    padding:18px;
+    transition:.3s;
+}
+.stat-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 0 0 1px #38bdf8;
+}
+.stat-icon{
+    font-size:22px;
+    margin-bottom:10px;
+}
+.stat-value{
+    font-size:22px;
+    font-weight:700;
+}
+.stat-label{
+    font-size:13px;
+    color:#94a3b8;
+}
+
+/* ===== WELCOME CARD ===== */
+.welcome{
+    background:linear-gradient(135deg,#1e293b,#020617);
+    border-radius:16px;
+    padding:22px;
+    border:1px solid #1e293b;
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+    .sidebar{left:-240px}
+    .sidebar.active{left:0}
+    .topbar,.main{margin-left:0}
+    .menu-btn{display:block}
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <h4>Heavy Deals</h4>
+    <a href="#" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/orderform"><i class="bi bi-file-earmark-text"></i> Order Form</a>
+    <a href="/refundform"><i class="bi bi-cash-stack"></i> Refund Form</a>
+    <a href="#"><i class="bi bi-gear"></i> Settings</a>
+    <a href="/Logout" class="text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <i class="bi bi-list menu-btn" onclick="toggleSidebar()"></i>
+    <div class="top-title">Dashboard</div>
+
+    <div class="profile">
+        <div class="text-end me-2">
+            <div class="profile-name">{{ name }}</div>
+            <div class="profile-role">User Account</div>
+        </div>
+        <div class="avatar">{{ name[0] }}</div>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-icon text-info"><i class="bi bi-bag-check"></i></div>
+            <div class="stat-value">{{TO}}</div>
+            <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon text-success"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value">{{CO}}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon text-warning"><i class="bi bi-clock"></i></div>
+            <div class="stat-value">{{PO}}</div>
+            <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon text-primary"><i class="bi bi-wallet2"></i></div>
+            <div class="stat-value">₹{{R}}</div>
+            <div class="stat-label">Refunded Amount</div>
+        </div>
+    </div>
+
+    <div class="welcome">
+        <h5>Welcome, {{ name }} 👋</h5>
+    </div>
+
+    
+</div>
+
+<script>
+function toggleSidebar(){
+    document.getElementById("sidebar").classList.toggle("active");
+}
+</script>
+
+</body>
+</html>

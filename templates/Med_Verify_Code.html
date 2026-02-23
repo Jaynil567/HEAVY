@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Verify Code | Heavy Deals</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+    font-family:'Poppins',sans-serif;
+    min-height:100vh;
+    background:linear-gradient(135deg,#1d2671,#c33764);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.card{
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(12px);
+    border-radius:20px;
+    padding:30px;
+    color:#fff;
+    width:100%;
+    max-width:380px;
+}
+.form-control{
+    border-radius:30px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h4 class="text-center mb-3">Verify Code</h4>
+    <p class="text-center small mb-4">
+        Enter verification code sent to your email
+    </p>
+
+    <form method="post" action="/Med_Verify_Code">
+        <input type="text" name="code"
+               class="form-control mb-3"
+               placeholder="Verification Code"
+               required>
+
+        <button class="btn btn-warning w-100">
+            Verify
+        </button>
+
+        {% if msg %}
+<div class="alert alert-danger text-center py-2 my-3">
+    {{ msg }}
+</div>
+{% endif %}
+    </form>
+</div>
+
+</body>
+</html>
