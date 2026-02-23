@@ -35,7 +35,8 @@ app.secret_key = "heavy-secret"   # learning purpose
 
 # ----------send email for password --------------
 def send_verification_email(to_email, code):
-    msg = MIMEText(f"""
+    try:
+        msg = MIMEText(f"""
 Heavy Deals – Password Reset
 
 Your verification code is: {code}
@@ -43,14 +44,16 @@ Your verification code is: {code}
 If you did not request this, ignore this email.
 """)
 
-    msg['Subject'] = "Heavy Deals | Password Reset Code"
-    msg['From'] = "heavydeals07@gmail.com"
-    msg['To'] = to_email
+        msg['Subject'] = "Heavy Deals | Password Reset Code"
+        msg['From'] = "heavydeals07@gmail.com"
+        msg['To'] = to_email
 
-    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    server.login("heavydeals07@gmail.com", "tpoj rjnp ltqe fmew")
-    server.send_message(msg)
-    server.quit()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.login("heavydeals07@gmail.com", "tpoj rjnp ltqe fmew")
+        server.send_message(msg)
+        server.quit()
+    except Exception as e:
+        print("EMAIL ERROR:", e)
 
 # ---------- DB CONNECTION ----------
 def db():
@@ -465,6 +468,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
