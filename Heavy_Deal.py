@@ -68,10 +68,6 @@ def db():
 # ---------- HOME ----------
 @app.route('/')
 def Home():
-    if session.get('Cust num') != None:
-        return redirect('/Customer_Portal/Dashboard')
-    elif session.get('Med num') != None:
-        return redirect('/Mediator_Portal/Dashboard')
     return render_template("Home.html")
 
 
@@ -221,9 +217,6 @@ def Customer_Portal_Dashboard():
     num=session.get('Cust num')
     passw=session.get('Cust passw')
     email=session.get('Cust email')
-
-    if name == None:
-        return return redirect('/')
     
     conn = db()
     cur = conn.cursor()
@@ -351,10 +344,7 @@ def Mediator_Portal_Dashboard():
     MN = session.get('Med name')
     MNUM = session.get('Med num')
 
-    if MUN == None:
-        return return redirect('/')
 
-    
     conn = db()
     cur = conn.cursor()
     cur.execute('select  count(*) from customer_orders')
@@ -479,6 +469,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
