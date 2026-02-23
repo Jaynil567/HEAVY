@@ -1,6 +1,6 @@
-flask
+Flask
+gunicorn
 mysql-connector-python
 gspread
-google-auth
+oauth2client
 cloudinary
-gunicorn
