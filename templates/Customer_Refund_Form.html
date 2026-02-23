@@ -149,11 +149,47 @@ body{
     .topbar,.main{margin-left:0}
     .menu-btn{display:block}
 }
+
+/* Sidebar */
+@media (max-width: 768px) {
+#sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    width: 260px;
+    height: 100%;
+    background: #111;
+    transition: 0.3s;
+    z-index: 1000;
+}
+
+/* Open sidebar */
+#sidebar.active {
+    left: 0;
+}
+}
+
+/* Overlay */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    z-index: 999;
+}
+
+#overlay.active {
+    display: block;
+}
+    
 </style>
 </head>
 
 <body>
-
+<div id="overlay"></div>
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
     <h4>Heavy Deals</h4>
@@ -165,7 +201,7 @@ body{
 
 <!-- TOPBAR -->
 <div class="topbar">
-    <i class="bi bi-list menu-btn" onclick="toggleSidebar()"></i>
+    <i class="bi bi-list menu-btn" onclick="openSidebar()"></i>
     <div class="top-title">Refund Form</div>
 
     <div class="profile">
@@ -252,6 +288,45 @@ body{
 
 
 <script>
+
+document.addEventListener("click", function(e) {
+    let sidebar = document.querySelector(".sidebar");
+
+    // ONLY mobile par close hoga
+    if (window.innerWidth <= 768) {
+        if (!e.target.closest(".sidebar") && !e.target.closest(".menu-btn")) {
+            sidebar.classList.remove("active");
+        }
+    }
+});
+
+
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+
+// open sidebar
+function openSidebar() {
+    sidebar.classList.add("active");
+    overlay.classList.add("active");
+}
+
+// close sidebar
+function closeSidebar() {
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+}
+
+// overlay click -> close sidebar
+overlay.addEventListener("click", closeSidebar);
+
+// outside click (optional advanced)
+document.addEventListener("click", function(e) {
+    if (!sidebar.contains(e.target) && !e.target.closest(".menu-btn")) {
+        closeSidebar();
+    }
+});
+
+    
 function toggleSidebar(){
     document.getElementById("sidebar").classList.toggle("active");
 }
@@ -259,4 +334,5 @@ function toggleSidebar(){
 
 </body>
 </html>
+
 
