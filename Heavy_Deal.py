@@ -219,9 +219,19 @@ def Customer_Portal_Dashboard():
     email=session.get('Cust email')
     if num == None:
         return redirect('/')
-    TO=0
-    PO=0
-    return render_template("Customer_Dashboard.html", name=name, num=num, passw=passw, email=email,TO=TO,PO=PO,CO=TO-PO,R=(TO-PO)*60)
+
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("SELECT ordercount, refundcount FROM customer WHERE Number=%s", (num,))
+    row = cur.fetchone()
+    TO = row[0]
+    RO = row[1]
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+    
+    return render_template("Customer_Dashboard.html", name=name, num=num, passw=passw, email=email,TO=TO,PO=TO-RO,CO=RO,R=RO*60)
 
 # ---------- MEDIATOR LOGIN ----------
 @app.route('/Mediator_Login',methods=['GET','POST'])
@@ -402,6 +412,14 @@ def orderform():
         now = datetime.now().replace(microsecond=0)
         OSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num)])
         SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani"])
+
+        conn = db()
+        cur = conn.cursor()
+        cur.execute("UPDATE customer SET ordercount = ordercount + 1 WHERE Number=%s", (num,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
         return render_template("order_success.html")
 
     return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email)
@@ -440,20 +458,22 @@ def refundform():
         RSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani",int(num),email])
         SellerR_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani"])
 
-        
+        conn = db()
+        cur = conn.cursor()
+        cur.execute("UPDATE customer SET refundcount = refundcount + 1 WHERE Number=%s", (num,))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+
         return render_template("order_success.html")
 
     return render_template("Customer_Refund_Form.html", name=name, num=num, passw=passw, email=email)
-
-
-
-
-
-
-
+    
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
