@@ -150,11 +150,24 @@ body{
     .menu-btn{display:block}
 }
 
+/* Sidebar */
+@media (max-width: 768px) {
+#sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    width: 260px;
+    height: 100%;
+    background: #111;
+    transition: 0.3s;
+    z-index: 1000;
+}
+
 /* Open sidebar */
 #sidebar.active {
     left: 0;
 }
-
+}
 
 /* Overlay */
 #overlay {
@@ -171,6 +184,7 @@ body{
 #overlay.active {
     display: block;
 }
+    
 </style>
 </head>
 
@@ -180,15 +194,15 @@ body{
 <div class="sidebar" id="sidebar">
     <h4>Heavy Deals</h4>
     <a href="/Customer_Portal/Dashboard" ><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/orderform" class="active"><i class="bi bi-file-earmark-text"></i> Order Form</a>
-    <a href="/refundform"><i class="bi bi-cash-stack"></i> Refund Form</a>
+    <a href="/orderform" ><i class="bi bi-file-earmark-text"></i> Order Form</a>
+    <a href="/refundform" class="active"><i class="bi bi-cash-stack"></i> Refund Form</a>
     <a href="/Logout" class="text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
 </div>
 
 <!-- TOPBAR -->
 <div class="topbar">
     <i class="bi bi-list menu-btn" onclick="openSidebar()"></i>
-    <div class="top-title">Order Form</div>
+    <div class="top-title">Refund Form</div>
 
     <div class="profile">
         <div class="text-end me-2">
@@ -203,7 +217,7 @@ body{
 <div class="main">
 
     <div class="welcome mb-4">
-        <h5>Submit Your Order</h5>
+        <h5>Submit Your Refund Requist</h5>
         <p class="text-secondary mb-0">
             Please fill correct details for fast processing
         </p>
@@ -267,7 +281,9 @@ body{
 
 </div>
 
+
 <script>
+
 document.addEventListener("click", function(e) {
     let sidebar = document.querySelector(".sidebar");
 
@@ -279,7 +295,8 @@ document.addEventListener("click", function(e) {
     }
 });
 
-  const sidebar = document.getElementById("sidebar");
+
+const sidebar = document.getElementById("sidebar");
 const overlay = document.getElementById("overlay");
 
 // open sidebar
@@ -303,7 +320,7 @@ document.addEventListener("click", function(e) {
         closeSidebar();
     }
 });
-  
+
     
 function toggleSidebar(){
     document.getElementById("sidebar").classList.toggle("active");
@@ -312,6 +329,4 @@ function toggleSidebar(){
 
 </body>
 </html>
-
-
 
