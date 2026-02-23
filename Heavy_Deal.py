@@ -218,7 +218,7 @@ def Customer_Portal_Dashboard():
     passw=session.get('Cust passw')
     email=session.get('Cust email')
     if num == None:
-        return redirect('/Password_Reset_Success')
+        return redirect('/')
         
     conn = db()
     cur = conn.cursor()
@@ -346,6 +346,8 @@ def Mediator_Portal_Dashboard():
     MN = session.get('Med name')
     MNUM = session.get('Med num')
 
+    if MUN == None:
+        return redirect('/')
 
     conn = db()
     cur = conn.cursor()
@@ -471,6 +473,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
