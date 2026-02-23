@@ -219,21 +219,8 @@ def Customer_Portal_Dashboard():
     email=session.get('Cust email')
     if num == None:
         return redirect('/')
-        
-    conn = db()
-    cur = conn.cursor()
-    cur.execute('select  count(*) from customer_orders where whatsapp=%s',(num,))
-    row = cur.fetchone()
-    TO=row[0]
-
-    cur.execute('select  count(*) from customer_orders where whatsapp=%s and status=%s',(num,"Pending"))
-    rowP = cur.fetchone()
-    PO=rowP[0]
-    conn.commit()
-    cur.close()
-
-    
-    
+    TO=0
+    PO=0
     return render_template("Customer_Dashboard.html", name=name, num=num, passw=passw, email=email,TO=TO,PO=PO,CO=TO-PO,R=(TO-PO)*60)
 
 # ---------- MEDIATOR LOGIN ----------
@@ -348,20 +335,14 @@ def Mediator_Portal_Dashboard():
 
     if MUN == None:
         return redirect('/')
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute('select  count(*) from customer_orders')
-    row = cur.fetchone()
-    TO=row[0]
-
-    conn = db()
-    cur = conn.cursor()
-    cur.execute('select  count(*) from customer_refunds')
-    row = cur.fetchone()
-    RF=row[0]
+        
+    TO=0
+    RF=0
     
     return render_template('Mediator_Dashboard.html', MUN=MUN, MN=MN, MNUM=MNUM, TO=TO, RF=RF, TP=RF*60)
+
+
+
 @app.route("/add_deal_code", methods=["POST"])
 def add_deal_code():
     Nmsg=""
@@ -473,6 +454,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
