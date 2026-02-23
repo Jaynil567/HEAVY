@@ -217,7 +217,9 @@ def Customer_Portal_Dashboard():
     num=session.get('Cust num')
     passw=session.get('Cust passw')
     email=session.get('Cust email')
-    
+    if num == None:
+        return redirect('/Password_Reset_Success')
+        
     conn = db()
     cur = conn.cursor()
     cur.execute('select  count(*) from customer_orders where whatsapp=%s',(num,))
@@ -469,6 +471,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
