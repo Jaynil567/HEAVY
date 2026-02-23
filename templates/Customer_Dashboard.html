@@ -151,6 +151,7 @@ body{
 }
 
 /* Sidebar */
+@media (max-width: 768px) {
 #sidebar {
     position: fixed;
     left: -260px;
@@ -165,6 +166,7 @@ body{
 /* Open sidebar */
 #sidebar.active {
     left: 0;
+}
 }
 
 /* Overlay */
@@ -244,7 +246,18 @@ body{
     
 </div>
 
+<script>
+document.addEventListener("click", function(e) {
+    let sidebar = document.querySelector(".sidebar");
 
+    // ONLY mobile par close hoga
+    if (window.innerWidth <= 768) {
+        if (!e.target.closest(".sidebar") && !e.target.closest(".menu-btn")) {
+            sidebar.classList.remove("active");
+        }
+    }
+});
+</script>
 <script>
 const sidebar = document.getElementById("sidebar");
 const overlay = document.getElementById("overlay");
