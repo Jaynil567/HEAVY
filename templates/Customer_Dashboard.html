@@ -149,11 +149,44 @@ body{
     .topbar,.main{margin-left:0}
     .menu-btn{display:block}
 }
+
+/* Sidebar */
+#sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    width: 260px;
+    height: 100%;
+    background: #111;
+    transition: 0.3s;
+    z-index: 1000;
+}
+
+/* Open sidebar */
+#sidebar.active {
+    left: 0;
+}
+
+/* Overlay */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    z-index: 999;
+}
+
+#overlay.active {
+    display: block;
+}
 </style>
 </head>
 
 <body>
-
+<div id="overlay"></div>
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
     <h4>Heavy Deals</h4>
@@ -165,7 +198,7 @@ body{
 
 <!-- TOPBAR -->
 <div class="topbar">
-    <i class="bi bi-list menu-btn" onclick="toggleSidebar()"></i>
+    <button class="menu-btn" onclick="openSidebar()">☰</button>
     <div class="top-title">Dashboard</div>
 
     <div class="profile">
