@@ -1,0 +1,1 @@
+web: gunicorn Heavy_Deal:app
