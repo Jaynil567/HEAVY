@@ -401,10 +401,10 @@ def orderform():
     num=session.get('Cust num')
     passw=session.get('Cust passw')
     email=session.get('Cust email')
-    OSheet= client.open("Demo Order").sheet1
-    SellerO_sheet= client.open("Done Order Form").sheet1
+    
     if request.method == "POST":
-
+        OSheet= client.open("Demo Order").sheet1
+        SellerO_sheet= client.open("Done Order Form").sheet1
         deal_code   = request.form.get("deal_code")
         order_id       = request.form.get("order_id")
         date_input     = request.form.get("order_date")
@@ -519,6 +519,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
