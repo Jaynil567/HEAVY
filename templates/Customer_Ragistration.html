@@ -52,11 +52,16 @@ body{
 <body>
 
 <div class="register-card">
+    
     <div class="text-center mb-4">
         <i class="bi bi-person-plus-fill fs-1"></i>
         <h3 class="fw-bold mt-2">Customer Registration</h3>
         <p class="small">Create your Heavy Deals account</p>
     </div>
+
+    {% if msg %}
+    <div class="alert alert-danger text-center py-2">{{ msg }}</div>
+    {% endif %}
 
     <form id="registerForm" method="post" action="/Customer_Ragistration">
 
@@ -126,4 +131,3 @@ document.getElementById("registerForm").addEventListener("submit", function(e){
 
 </body>
 </html>
-
