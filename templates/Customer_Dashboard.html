@@ -16,7 +16,7 @@
             width: 100%;
             overflow-x: auto;
         }
-        
+
         .orders-table {
             width: 100%;
             min-width: 100%;
@@ -228,11 +228,38 @@
         }
 
         /* ===== STATS CARDS ===== */
+        /* DESKTOP - 4 in row */
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+        }
+
+        .stat-card {
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+            padding: 18px;
+            transition: .3s;
+        }
+
+        /* MOBILE - 2x2 */
+        @media (max-width: 768px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .stat-card {
+                height: 120px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                border-radius: 20px;
+            }
         }
 
         .stat-card {
@@ -381,13 +408,13 @@
             <div class="stat-card">
                 <div class="stat-icon text-primary"><i class="bi bi-wallet2"></i></div>
                 <div class="stat-value">₹{{R}}</div>
-                <div class="stat-label">Refundable Amount</div>
+                <div class="stat-label">Refund</div>
             </div>
         </div>
 
         {% if orders %}
         <div class="orders-wrapper mt-5">
-            
+
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="orders-title mb-0">
                     My Orders
@@ -429,7 +456,7 @@
                 </table>
 
             </div>
-            
+
         </div>
         {% else %}
         <p class="text-light mt-4">No orders yet.</p>
