@@ -25,6 +25,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(google_creds, scope)
 client = gspread.authorize(creds)
 
 
+
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'static/deal_images'
@@ -219,16 +220,6 @@ def Customer_Portal_Dashboard():
     if num == None:
         return redirect('/')
 
-    conn = db()
-    cur = conn.cursor()
-    cur.execute("SELECT ordercount, refundcount FROM customer WHERE Number=%s", (num,))
-    row = cur.fetchone()
-    TO = row[0]
-    RO = row[1]
-    conn.commit()
-    cur.close()
-    conn.close()
-
     sheet = client.open("Demo Order").sheet1
     all_values = sheet.get_all_values()
     headers = all_values[0]
@@ -236,11 +227,19 @@ def Customer_Portal_Dashboard():
     mobile_index = headers.index("Mobile")
     order_id_index = headers.index("Order ID")
     order_date_index = headers.index("Order date")
+    order_status_index = headers.index("Status")
     user_orders = []
 
+    TO = 0
     for row in data_rows:
         if row[mobile_index] == num:
-            user_orders.append((row[order_id_index], row[order_date_index]))
+            TO+=1
+            user_orders.append((row[order_id_index], row[order_date_index], row[order_status_index]))
+    
+    RO = 0
+    for i in user_orders:
+        if i[2]=="Done":
+            RO+=1
     
     
     return render_template("Customer_Dashboard.html",orders=user_orders, name=name, num=num, passw=passw, email=email,TO=TO,PO=TO-RO,CO=RO,R=RO*60)
@@ -423,7 +422,7 @@ def orderform():
         
         now = datetime.now().replace(microsecond=0)
         OSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num)])
-        SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani"])
+        SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani","Pending"])
 
         conn = db()
         cur = conn.cursor()
@@ -445,16 +444,20 @@ def orderform():
 
 @app.route("/refundform", methods=["GET", "POST"])
 def refundform():
+    id = request.args.get("id")
     name=session.get('Cust name')
     num=session.get('Cust num')
     passw=session.get('Cust passw')
     email=session.get('Cust email')
-    RSheet= client.open("Demo Refund").sheet1
-    SellerR_sheet= client.open("Done Refund form").sheet1
     if request.method == "POST":
-
+        RSheet= client.open("Demo Refund").sheet1
+        SellerR_sheet= client.open("Done Refund form").sheet1
+        OrderSheet = client.open("Demo Order").sheet1
         deal_code   = request.form.get("deal_code")
-        order_id       = request.form.get("order_id")
+        if id :
+            order_id=id
+        else:
+            order_id       = request.form.get("order_id_p")
         date_input     = request.form.get("order_date")
         order_date = datetime.strptime(date_input, "%Y-%m-%d").strftime("%d-%m-%Y")
         Product_name         = request.form.get("PN")
@@ -476,6 +479,23 @@ def refundform():
         RSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani",int(num),email])
         SellerR_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani"])
 
+        all_data = OrderSheet.get_all_values()
+        headers = all_data[0]
+        rows = all_data[1:]
+        order_id_col = headers.index("Order ID")
+        status_col   = headers.index("Status")
+        Dss_col      = headers.index("Delivered SS")
+        Rss_col      = headers.index("Review SS")
+        RL_col       = headers.index("Review Link")
+        form_order_id = order_id
+        for i, row in enumerate(rows, start=2):
+            if row[order_id_col] == form_order_id:
+                OrderSheet.update_cell(i, status_col + 1, "Done")
+                OrderSheet.update_cell(i, Dss_col + 1, D_SS)
+                OrderSheet.update_cell(i, Rss_col + 1, Review_url)
+                OrderSheet.update_cell(i, RL_col + 1, link)
+                break
+
         conn = db()
         cur = conn.cursor()
         cur.execute("UPDATE customer SET refundcount = refundcount + 1 WHERE Number=%s", (num,))
@@ -491,13 +511,14 @@ def refundform():
     deal_data = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template("Customer_Refund_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data)
-    
+    if id != 'undefined' :
+        return render_template("Customer_Refund_Form.html",id=id, name=name, num=num, passw=passw, email=email,deals=deal_data)
+    else :
+        return render_template("Customer_Refund_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data)
+
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
-
-
 
 
 
