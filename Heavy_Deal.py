@@ -20,8 +20,7 @@ cloudinary.config(
 scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
 
-google_creds = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
-creds = ServiceAccountCredentials.from_json_keyfile_dict(google_creds, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("abc.json", scope)
 client = gspread.authorize(creds)
 
 
@@ -229,9 +228,22 @@ def Customer_Portal_Dashboard():
     conn.commit()
     cur.close()
     conn.close()
+
+    sheet = client.open("Demo Order").sheet1
+    all_values = sheet.get_all_values()
+    headers = all_values[0]
+    data_rows = all_values[1:]
+    mobile_index = headers.index("Mobile")
+    order_id_index = headers.index("Order ID")
+    order_date_index = headers.index("Order date")
+    user_orders = []
+
+    for row in data_rows:
+        if row[mobile_index] == num:
+            user_orders.append((row[order_id_index], row[order_date_index]))
     
     
-    return render_template("Customer_Dashboard.html", name=name, num=num, passw=passw, email=email,TO=TO,PO=TO-RO,CO=RO,R=RO*60)
+    return render_template("Customer_Dashboard.html",orders=user_orders, name=name, num=num, passw=passw, email=email,TO=TO,PO=TO-RO,CO=RO,R=RO*60)
 
 # ---------- MEDIATOR LOGIN ----------
 @app.route('/Mediator_Login',methods=['GET','POST'])
@@ -421,8 +433,14 @@ def orderform():
         conn.close()
         
         return render_template("order_success.html")
+    conn = db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT deal_code FROM deal_codes")
+    deal_data = cursor.fetchall()
+    cursor.close()
+    conn.close()
 
-    return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email)
+    return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data)
 
 
 @app.route("/refundform", methods=["GET", "POST"])
@@ -467,12 +485,17 @@ def refundform():
 
 
         return render_template("order_success.html")
-
-    return render_template("Customer_Refund_Form.html", name=name, num=num, passw=passw, email=email)
+    conn = db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT deal_code FROM deal_codes")
+    deal_data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template("Customer_Refund_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data)
     
 # ---------- RUN ----------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080,debug=True)
 
 
 
