@@ -242,7 +242,11 @@ body{
 
                 <div class="col-md-6">
                     <label class="form-label text-warning">Order ID *</label>
-                    <input type="text" class="form-control" name="order_id" placeholder="Enetr Your Order ID" required>
+                    {% if id %}
+                    <input type="text" class="form-control" value="{{ id }}" name="order_id" placeholder="Enetr Your Order ID" required disabled>
+                    {% else %}
+                    <input type="text" class="form-control" name="order_id_p" placeholder="Enetr Your Order ID" required >
+                    {% endif %}
                 </div>
 
                 <div class="col-md-6">
