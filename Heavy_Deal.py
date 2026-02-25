@@ -480,7 +480,6 @@ def refundform():
         all_values = OrderSheet.get_all_values()
         headers = all_values[0]
         data_rows = all_values[1:]
-        mobile_index = headers.index("Mobile")
         order_id_index = headers.index("Order ID")
         status_col   = headers.index("Status")
         Dss_col      = headers.index("Delivered SS")
@@ -491,11 +490,10 @@ def refundform():
 
         flag = 0
         for row in data_rows:
-            if row[mobile_index] == num:
-                user_orders.append((row[order_id_index]))  
-        for i in user_orders:
-            if i[0]==order_id:
-                flag = 1
+            if row[order_id_index] == order_id:
+                flag=1
+                break
+            
 
         if flag == 0:
             msg="Invalid Order-ID"
@@ -526,10 +524,24 @@ def refundform():
                     OrderSheet.update_cell(i, Dss_col + 1, D_url)
                     OrderSheet.update_cell(i, Rss_col + 1, Review_url)
                     OrderSheet.update_cell(i, RL_col + 1, link)
-                    CodeSheet.update_cell(i, status_col + 1, "Done")
-                    CodeSheet.update_cell(i, Dss_col + 1, D_url)
-                    CodeSheet.update_cell(i, Rss_col + 1, Review_url)
-                    CodeSheet.update_cell(i, RL_col + 1, link)
+                    break
+
+            Call_values = CodeSheet.get_all_values()
+            Cheaders = Call_values[0]
+            Cdata_rows = Call_values[1:]
+            Corder_id_index = Cheaders.index("Order ID")
+            Cstatus_col   = Cheaders.index("Status")
+            CDss_col      = Cheaders.index("Delivered SS")
+            CRss_col      = Cheaders.index("Review SS")
+            CRL_col       = Cheaders.index("Review Link")
+
+
+            for i, row in enumerate(Cdata_rows, start=2):
+                if row[Corder_id_index] == order_id:
+                    CodeSheet.update_cell(i, Cstatus_col + 1, "Done")
+                    CodeSheet.update_cell(i, CDss_col + 1, D_url)
+                    CodeSheet.update_cell(i, CRss_col + 1, Review_url)
+                    CodeSheet.update_cell(i, CRL_col + 1, link)
                     break
 
             return render_template("order_success.html")
