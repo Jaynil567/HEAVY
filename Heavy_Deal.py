@@ -481,6 +481,7 @@ def refundform():
         headers = all_values[0]
         data_rows = all_values[1:]
         order_id_index = headers.index("Order ID")
+        order_mobile_index = headers.index("Mobile")
         status_col   = headers.index("Status")
         Dss_col      = headers.index("Delivered SS")
         Rss_col      = headers.index("Review SS")
@@ -490,7 +491,7 @@ def refundform():
 
         flag = 0
         for row in data_rows:
-            if row[order_id_index] == order_id:
+            if row[order_id_index] == order_id and row[order_mobile_index]==num:
                 flag=1
                 break
             
@@ -554,3 +555,4 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
