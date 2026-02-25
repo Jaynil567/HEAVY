@@ -232,13 +232,12 @@ body{
             <div class="row g-3">
 
                 <div class="col-md-6">
-                    <label class="form-label text-warning">Deal Code *</label><br>
-                    <select class="form-select" name="deal_code" required>
-                        <option value="" hidden>-- Select Deal Code --</option>
-                        {% for deal in deals %}
-                            <option value="{{ deal[0] }}">{{ deal[0] }}</option>
-                        {% endfor %}
-                    </select>
+                    <label class="form-label text-warning">Deal Code *</label>
+                    {% if DC %}
+                    <input type="text" class="form-control" value="{{ DC }}" name="order_id" placeholder="Enetr Your Order ID" required disabled>
+                    {% else %}
+                    <input type="text" class="form-control" name="deal_code" placeholder="Enetr Deal Code" required >
+                    {% endif %}
                 </div>
 
                 <div class="col-md-6">
