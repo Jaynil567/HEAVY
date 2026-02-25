@@ -117,6 +117,24 @@ body{
     padding:18px;
     transition:.3s;
 }
+    @media (max-width: 768px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .stat-card {
+                height: 120px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                border-radius: 20px;
+            }
+        }
+
 .stat-card:hover{
     transform:translateY(-4px);
     box-shadow:0 0 0 1px #facc15;
