@@ -25,7 +25,6 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(google_creds, scope)
 client = gspread.authorize(creds)
 
 
-
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'static/deal_images'
@@ -313,7 +312,7 @@ def MVerify_Code():
             msg = "Invalid verification code"
 
     return render_template('Med_Verify_Code.html', msg=msg)
-@app.route('/Med_Reset_Password', methods=['GET', 'POST'])
+@app.route('/Med_Reset_Password/', methods=['GET', 'POST'])
 def MReset_Password():
     msg = ""
 
@@ -350,9 +349,12 @@ def MPassword_Reset_Success():
 # ---------- MEDIATOR PORTAL ----------
 @app.route('/Mediator_Portal/Dashboard')
 def Mediator_Portal_Dashboard():
+    Nmsg = request.args.get("Nmsg")
+    Pmsg = request.args.get("Pmsg")
     MUN = session.get('Med Username')
     MN = session.get('Med name')
     MNUM = session.get('Med num')
+
 
     if MUN == None:
         return redirect('/')
@@ -360,7 +362,7 @@ def Mediator_Portal_Dashboard():
     TO=0
     RF=0
     
-    return render_template('Mediator_Dashboard.html', MUN=MUN, MN=MN, MNUM=MNUM, TO=TO, RF=RF, TP=RF*60)
+    return render_template('Mediator_Dashboard.html',Nmsg=Nmsg,Pmsg=Pmsg, MUN=MUN, MN=MN, MNUM=MNUM, TO=TO, RF=RF, TP=RF*60)
 
 
 
@@ -380,7 +382,8 @@ def add_deal_code():
             Nmsg = "This Deal Code is already exist"
             cur.close()
             conn.close()
-            return render_template('Mediator_Dashboard.html', MUN=MUN, MN=MN, MNUM=MNUM, Nmsg=Nmsg)
+            return redirect(f'/Mediator_Portal/Dashboard?Nmsg={Nmsg}')
+            
         else:
             cur.execute(
                 "INSERT INTO deal_codes (deal_code) VALUES (%s)",
@@ -390,9 +393,9 @@ def add_deal_code():
             cur.close()
             conn.close()
             Pmsg=f"Added {deal_code}"
-            return render_template('Mediator_Dashboard.html', MUN=MUN, MN=MN, MNUM=MNUM, Pmsg=Pmsg)
+            return redirect(f'/Mediator_Portal/Dashboard?Pmsg={Pmsg}')
         
-    return render_template('Mediator_Dashboard.html', MUN=MUN, MN=MN, MNUM=MNUM)
+    return redirect('/Mediator_Portal/Dashboard')
 
 
 @app.route("/orderform", methods=["GET", "POST"])
@@ -401,10 +404,10 @@ def orderform():
     num=session.get('Cust num')
     passw=session.get('Cust passw')
     email=session.get('Cust email')
-    OSheet= client.open("Demo Order").sheet1
-    SellerO_sheet= client.open("Done Order Form").sheet1
+    
     if request.method == "POST":
-
+        OSheet= client.open("Demo Order").sheet1
+        SellerO_sheet= client.open("Done Order Form").sheet1
         deal_code   = request.form.get("deal_code")
         order_id       = request.form.get("order_id").replace(" ","")
         date_input     = request.form.get("order_date")
@@ -531,4 +534,3 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
-
