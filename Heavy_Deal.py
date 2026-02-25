@@ -48,7 +48,7 @@ def send_verification_email(to_email, code):
             '''
         )
 
-        sg = SendGridAPIClient('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')
+        sg = SendGridAPIClient(os.environ.get("SENDGRID_API_KEY"))
         response = sg.send(message)
 
         print("Email sent:", response.status_code)
@@ -555,5 +555,6 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
