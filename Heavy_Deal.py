@@ -25,6 +25,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(google_creds, scope)
 client = gspread.authorize(creds)
 
 
+
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'static/deal_images'
@@ -227,13 +228,14 @@ def Customer_Portal_Dashboard():
     order_id_index = headers.index("Order ID")
     order_date_index = headers.index("Order date")
     order_status_index = headers.index("Status")
+    order_cod_index = headers.index("Deal Code")
     user_orders = []
 
     TO = 0
     for row in data_rows:
         if row[mobile_index] == num:
             TO+=1
-            user_orders.append((row[order_id_index], row[order_date_index], row[order_status_index]))
+            user_orders.append((row[order_id_index], row[order_date_index], row[order_status_index], row[order_cod_index]))
     
     RO = 0
     for i in user_orders:
@@ -416,7 +418,7 @@ def orderform():
         deal_type      = 'COD Deal'
         reviewer_name  = request.form.get("reviewer_name")
         Product_name       = request.form.get("PN")
-        
+        CodeSheet= client.open(deal_code).sheet1
 
         Order_SS = request.files.get("screenshot")
         if Order_SS:
@@ -424,9 +426,9 @@ def orderform():
             url = result['secure_url']
         
         now = datetime.now().replace(microsecond=0)
-        OSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num)])
-        SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani","Pending"])
-
+        OSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num),'Pending'])
+        SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani"])
+        CodeSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num),'Pending'])
         
         return render_template("order_success.html")
     conn = db()
@@ -449,6 +451,7 @@ def refundform():
     conn.close()
     msg=""
     id = request.args.get("id")
+    DC = request.args.get("DealCode")
     name=session.get('Cust name')
     num=session.get('Cust num')
     passw=session.get('Cust passw')
@@ -457,7 +460,12 @@ def refundform():
         RSheet= client.open("Demo Refund").sheet1
         SellerR_sheet= client.open("Done Refund form").sheet1
         OrderSheet = client.open("Demo Order").sheet1
-        deal_code   = request.form.get("deal_code")
+        
+        if DC :
+            deal_code=DC
+        else:
+            deal_code   = request.form.get("deal_code")
+        CodeSheet= client.open(deal_code).sheet1
         if id :
             order_id=id.replace(" ","")
         else:
@@ -474,6 +482,10 @@ def refundform():
         data_rows = all_values[1:]
         mobile_index = headers.index("Mobile")
         order_id_index = headers.index("Order ID")
+        status_col   = headers.index("Status")
+        Dss_col      = headers.index("Delivered SS")
+        Rss_col      = headers.index("Review SS")
+        RL_col       = headers.index("Review Link")
         user_orders = []
 
 
@@ -488,9 +500,9 @@ def refundform():
         if flag == 0:
             msg="Invalid Order-ID"
             if id != 'undefined' :
-                return render_template("Customer_Refund_Form.html",msg=msg,id=id, name=name, num=num, passw=passw, email=email,deals=deal_data)
+                return render_template("Customer_Refund_Form.html",DC=DC,msg=msg,id=id, name=name, num=num, passw=passw, email=email,deals=deal_data)
             else :
-                return render_template("Customer_Refund_Form.html",msg=msg, name=name, num=num, passw=passw, email=email,deals=deal_data)
+                return render_template("Customer_Refund_Form.html",DC=DC,msg=msg, name=name, num=num, passw=passw, email=email,deals=deal_data)
 
         else:
             Review_SS = request.files.get("Review-screenshot")
@@ -507,29 +519,25 @@ def refundform():
             RSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani",int(num),email])
             SellerR_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani"])
 
-            all_data = OrderSheet.get_all_values()
-            headers = all_data[0]
-            rows = all_data[1:]
-            order_id_col = headers.index("Order ID")
-            status_col   = headers.index("Status")
-            Dss_col      = headers.index("Delivered SS")
-            Rss_col      = headers.index("Review SS")
-            RL_col       = headers.index("Review Link")
-            form_order_id = order_id
-            for i, row in enumerate(rows, start=2):
-                if row[order_id_col] == form_order_id:
+
+            for i, row in enumerate(data_rows, start=2):
+                if row[order_id_index] == order_id:
                     OrderSheet.update_cell(i, status_col + 1, "Done")
                     OrderSheet.update_cell(i, Dss_col + 1, D_url)
                     OrderSheet.update_cell(i, Rss_col + 1, Review_url)
                     OrderSheet.update_cell(i, RL_col + 1, link)
+                    CodeSheet.update_cell(i, status_col + 1, "Done")
+                    CodeSheet.update_cell(i, Dss_col + 1, D_url)
+                    CodeSheet.update_cell(i, Rss_col + 1, Review_url)
+                    CodeSheet.update_cell(i, RL_col + 1, link)
                     break
 
             return render_template("order_success.html")
     
     if id != 'undefined' :
-        return render_template("Customer_Refund_Form.html",id=id,msg=msg, name=name, num=num, passw=passw, email=email,deals=deal_data)
+        return render_template("Customer_Refund_Form.html",DC=DC,id=id,msg=msg, name=name, num=num, passw=passw, email=email,deals=deal_data)
     else :
-        return render_template("Customer_Refund_Form.html", name=name,msg=msg, num=num, passw=passw, email=email,deals=deal_data)
+        return render_template("Customer_Refund_Form.html",DC=DC, name=name,msg=msg, num=num, passw=passw, email=email,deals=deal_data)
 
 # ---------- RUN ----------
 if __name__ == "__main__":
