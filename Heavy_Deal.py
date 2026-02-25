@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request, redirect, session
 import mysql.connector
 import random
-import smtplib 
-from email.mime.text import MIMEText
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import cloudinary
 import cloudinary.uploader
 from datetime import datetime
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 import json
 import os
 
@@ -36,25 +36,25 @@ app.secret_key = "heavy-secret"   # learning purpose
 # ----------send email for password --------------
 def send_verification_email(to_email, code):
     try:
-        msg = MIMEText(f"""
-Heavy Deals – Password Reset
+        message = Mail(
+            from_email='heavydeals07@gmail.com',
+            to_emails=to_email,
+            subject='Heavy Deals | Password Reset Code',
+            html_content=f'''
+                <h3>Heavy Deals – Password Reset</h3>
+                <p>Your verification code is:</p>
+                <h2>{code}</h2>
+                <p>If you did not request this, ignore this email.</p>
+            '''
+        )
 
-Your verification code is: {code}
+        sg = SendGridAPIClient('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')
+        response = sg.send(message)
 
-If you did not request this, ignore this email.
-""")
+        print("Email sent:", response.status_code)
 
-        msg['Subject'] = "Heavy Deals | Password Reset Code"
-        msg['From'] = "heavydeals07@gmail.com"
-        msg['To'] = to_email
-
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        server.login("heavydeals07@gmail.com", "tpoj rjnp ltqe fmew")
-        server.send_message(msg)
-        server.quit()
     except Exception as e:
-        print("EMAIL ERROR:", e)
-
+        print("SENDGRID ERROR:", str(e))
 # ---------- DB CONNECTION ----------
 def db():
     return mysql.connector.connect(
@@ -555,4 +555,5 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
