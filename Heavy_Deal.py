@@ -20,9 +20,9 @@ cloudinary.config(
 scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
 
-google_creds = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
-creds = ServiceAccountCredentials.from_json_keyfile_dict(google_creds, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("abc.json", scope)
 client = gspread.authorize(creds)
+
 
 
 app = Flask(__name__)
@@ -405,7 +405,7 @@ def orderform():
     if request.method == "POST":
 
         deal_code   = request.form.get("deal_code")
-        order_id       = request.form.get("order_id")
+        order_id       = request.form.get("order_id").replace(" ","")
         date_input     = request.form.get("order_date")
         order_date = datetime.strptime(date_input, "%Y-%m-%d").strftime("%d-%m-%Y")
         amount         = int(request.form.get("amount"))
@@ -455,9 +455,9 @@ def refundform():
         OrderSheet = client.open("Demo Order").sheet1
         deal_code   = request.form.get("deal_code")
         if id :
-            order_id=id
+            order_id=id.replace(" ","")
         else:
-            order_id       = request.form.get("order_id_p")
+            order_id       = request.form.get("order_id_p").replace(" ","")
         date_input     = request.form.get("order_date")
         order_date = datetime.strptime(date_input, "%Y-%m-%d").strftime("%d-%m-%Y")
         Product_name         = request.form.get("PN")
@@ -529,4 +529,4 @@ def refundform():
 
 # ---------- RUN ----------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080,debug=True)
