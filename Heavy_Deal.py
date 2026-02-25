@@ -25,7 +25,6 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(google_creds, scope)
 client = gspread.authorize(creds)
 
 
-
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'static/deal_images'
@@ -401,10 +400,10 @@ def orderform():
     num=session.get('Cust num')
     passw=session.get('Cust passw')
     email=session.get('Cust email')
-    
+    OSheet= client.open("Demo Order").sheet1
+    SellerO_sheet= client.open("Done Order Form").sheet1
     if request.method == "POST":
-        OSheet= client.open("Demo Order").sheet1
-        SellerO_sheet= client.open("Done Order Form").sheet1
+
         deal_code   = request.form.get("deal_code")
         order_id       = request.form.get("order_id")
         date_input     = request.form.get("order_date")
@@ -424,12 +423,6 @@ def orderform():
         OSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num)])
         SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani","Pending"])
 
-        conn = db()
-        cur = conn.cursor()
-        cur.execute("UPDATE customer SET ordercount = ordercount + 1 WHERE Number=%s", (num,))
-        conn.commit()
-        cur.close()
-        conn.close()
         
         return render_template("order_success.html")
     conn = db()
@@ -444,6 +437,13 @@ def orderform():
 
 @app.route("/refundform", methods=["GET", "POST"])
 def refundform():
+    conn = db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT deal_code FROM deal_codes")
+    deal_data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    msg=""
     id = request.args.get("id")
     name=session.get('Cust name')
     num=session.get('Cust num')
@@ -465,69 +465,68 @@ def refundform():
         reviewer_name  = request.form.get("reviewer_name")
         link           = request.form.get("link")
 
-        Review_SS = request.files.get("Review-screenshot")
-        if Review_SS:
-            result = cloudinary.uploader.upload(Review_SS)
-            Review_url = result['secure_url']
-
-        D_SS = request.files.get("D-screenshot")
-        if D_SS:
-            result = cloudinary.uploader.upload(D_SS)
-            D_url = result['secure_url']
-
-        now = datetime.now().replace(microsecond=0)
-        RSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani",int(num),email])
-        SellerR_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani"])
-
-        all_data = OrderSheet.get_all_values()
-        headers = all_data[0]
-        rows = all_data[1:]
-        order_id_col = headers.index("Order ID")
-        status_col   = headers.index("Status")
-        Dss_col      = headers.index("Delivered SS")
-        Rss_col      = headers.index("Review SS")
-        RL_col       = headers.index("Review Link")
-        form_order_id = order_id
-        for i, row in enumerate(rows, start=2):
-            if row[order_id_col] == form_order_id:
-                OrderSheet.update_cell(i, status_col + 1, "Done")
-                OrderSheet.update_cell(i, Dss_col + 1, D_SS)
-                OrderSheet.update_cell(i, Rss_col + 1, Review_url)
-                OrderSheet.update_cell(i, RL_col + 1, link)
-                break
-
-        conn = db()
-        cur = conn.cursor()
-        cur.execute("UPDATE customer SET refundcount = refundcount + 1 WHERE Number=%s", (num,))
-        conn.commit()
-        cur.close()
-        conn.close()
+        all_values = OrderSheet.get_all_values()
+        headers = all_values[0]
+        data_rows = all_values[1:]
+        mobile_index = headers.index("Mobile")
+        order_id_index = headers.index("Order ID")
+        user_orders = []
 
 
-        return render_template("order_success.html")
-    conn = db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT deal_code FROM deal_codes")
-    deal_data = cursor.fetchall()
-    cursor.close()
-    conn.close()
+        flag = 0
+        for row in data_rows:
+            if row[mobile_index] == num:
+                user_orders.append((row[order_id_index]))  
+        for i in user_orders:
+            if i[0]==order_id:
+                flag = 1
+
+        if flag == 0:
+            msg="Invalid Order-ID"
+            if id != 'undefined' :
+                return render_template("Customer_Refund_Form.html",msg=msg,id=id, name=name, num=num, passw=passw, email=email,deals=deal_data)
+            else :
+                return render_template("Customer_Refund_Form.html",msg=msg, name=name, num=num, passw=passw, email=email,deals=deal_data)
+
+        else:
+            Review_SS = request.files.get("Review-screenshot")
+            if Review_SS:
+                result = cloudinary.uploader.upload(Review_SS)
+                Review_url = result['secure_url']
+
+            D_SS = request.files.get("D-screenshot")
+            if D_SS:
+                result = cloudinary.uploader.upload(D_SS)
+                D_url = result['secure_url']
+
+            now = datetime.now().replace(microsecond=0)
+            RSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani",int(num),email])
+            SellerR_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani"])
+
+            all_data = OrderSheet.get_all_values()
+            headers = all_data[0]
+            rows = all_data[1:]
+            order_id_col = headers.index("Order ID")
+            status_col   = headers.index("Status")
+            Dss_col      = headers.index("Delivered SS")
+            Rss_col      = headers.index("Review SS")
+            RL_col       = headers.index("Review Link")
+            form_order_id = order_id
+            for i, row in enumerate(rows, start=2):
+                if row[order_id_col] == form_order_id:
+                    OrderSheet.update_cell(i, status_col + 1, "Done")
+                    OrderSheet.update_cell(i, Dss_col + 1, D_url)
+                    OrderSheet.update_cell(i, Rss_col + 1, Review_url)
+                    OrderSheet.update_cell(i, RL_col + 1, link)
+                    break
+
+            return render_template("order_success.html")
+    
     if id != 'undefined' :
-        return render_template("Customer_Refund_Form.html",id=id, name=name, num=num, passw=passw, email=email,deals=deal_data)
+        return render_template("Customer_Refund_Form.html",id=id,msg=msg, name=name, num=num, passw=passw, email=email,deals=deal_data)
     else :
-        return render_template("Customer_Refund_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data)
+        return render_template("Customer_Refund_Form.html", name=name,msg=msg, num=num, passw=passw, email=email,deals=deal_data)
 
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
-
-
-
-
-
-
-
-
-
-
-
-
