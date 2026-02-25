@@ -469,7 +469,7 @@
                                 {% if order[2]=='Done'%}
                                 <i class="bi bi-check-circle-fill btn" style="color:green;"></i>
                                 {% else %}
-                                <button class="btn" onclick="goRF('{{order[0]}}')"><i class="bi bi-file-earmark-text btn btn-primary"></i></button>
+                                <button class="btn" onclick="goRF('{{order[0]}}','{{order[3]}}')"><i class="bi bi-file-earmark-text btn btn-primary"></i></button>
                                 {% endif %}
                             </td>
                         </tr>
@@ -536,8 +536,8 @@
             window.location.href = "{{ url_for('orderform')}}";
         }
 
-        function goRF(OI) {
-            window.location.href = "/refundform?id=" + OI;
+        function goRF(OI,DC) {
+            window.location.href = "/refundform?id=" + OI +"&DealCode="+ DC;
         }
     </script>
 
