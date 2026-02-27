@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session,url_for
 import mysql.connector
 import random
 import gspread
@@ -8,8 +8,20 @@ import cloudinary.uploader
 from datetime import datetime
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from google_auth_oauthlib.flow import Flow
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from google.auth.transport.requests import Request
+from google.oauth2.service_account import Credentials as SACredentials
+from datetime import timedelta
 import json
 import os
+
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
+app = Flask(__name__)
+app.secret_key = "heavy-secret"
+app.permanent_session_lifetime = timedelta(days=60)
 
 cloudinary.config(
     cloud_name="dajnnvznf",
@@ -17,21 +29,17 @@ cloudinary.config(
     api_secret="BQ1CJTtlscFnilZ1OnU-MBgZ6vA"
 )
 
-scope = ["https://spreadsheets.google.com/feeds",
-         "https://www.googleapis.com/auth/drive"]
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
 
-google_creds = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
-creds = ServiceAccountCredentials.from_json_keyfile_dict(google_creds, scope)
+clint_secret=json.loads(os.getenv("clint_secret"))
+ABCD = json.loads(os.getenv("ABCD"))
+creds = ServiceAccountCredentials.from_json_keyfile_dict(ABCD, SCOPES)
 client = gspread.authorize(creds)
 
 
-
-app = Flask(__name__)
-
-UPLOAD_FOLDER = 'static/deal_images'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-app.secret_key = "heavy-secret"   # learning purpose
 
 # ----------send email for password --------------
 def send_verification_email(to_email, code):
@@ -68,8 +76,17 @@ def db():
 # ---------- HOME ----------
 @app.route('/')
 def Home():
-    return render_template("Home.html")
 
+    # 🔹 Customer already logged in?
+    if session.get('Cust num'):
+        return redirect('/Customer_Portal/Dashboard')
+
+    # 🔹 Mediator already logged in?
+    if session.get('Med Username'):
+        return redirect('/Mediator_Portal/Dashboard')
+
+    # 🔹 Otherwise show home page
+    return render_template("Home.html")
 
 # ---------- CUSTOMER REGISTRATION ----------
 @app.route('/Customer_Ragistration', methods=['GET','POST'])
@@ -80,23 +97,31 @@ def Customer_Ragistration():
         num = request.form['Num']
         passw = request.form['P']
         email = request.form['E']
+        upi = request.form['upi']
         conn = db()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM customer WHERE Number=%s", (num,))
+        cur.execute("SELECT * FROM ShopKaro_Customers WHERE Number=%s", (num,))
         if cur.fetchone():
             msg = "This mobile number is already registered"
         else:
             cur.execute(
-                "INSERT INTO customer (Name, Number, passw, email) VALUES (%s,%s,%s,%s)",
-                (name, num, passw, email)
+                "INSERT INTO ShopKaro_Customers (Name, Number, passw, email,upi) VALUES (%s,%s,%s,%s,%s)",
+                (name, num, passw, email,upi)
             )
             conn.commit()
             cur.close()
             conn.close()
+
+            CustomerSheet=client.open("ShopKaro").sheet2
+            data = {"Name":name,"Whatsapp":num,"Email":email,"UPI ID":upi}
+            safe_append(CustomerSheet, data)
+
+            session.permanent = True
             session['Cust name'] = name
             session['Cust num'] = num
             session['Cust passw'] = passw
             session['Cust email'] = email
+            session['Cust upi']=upi
             return render_template("Registration_Success.html")
         cur.close()
         conn.close()
@@ -111,7 +136,7 @@ def Customer_Login():
         passw = request.form['P']
         conn = db()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM customer WHERE Number=%s", (num,))
+        cur.execute("SELECT * FROM ShopKaro_Customers WHERE Number=%s", (num,))
         row = cur.fetchone()
         if row is None:
             msg = "Mobile number not registered"
@@ -120,16 +145,18 @@ def Customer_Login():
         else:
             cur.close()
             conn.close()
+            session.permanent = True
             session['Cust name'] = row[1]
             session['Cust num'] = row[2]
             session['Cust passw'] = row[3]
             session['Cust email'] = row[4]
+            session['Cust upi']=row[5]
             return redirect('/Customer_Portal/Dashboard')
         cur.close()
         conn.close()
     return render_template("Customer_Login.html", msg=msg)
 
-# ---------- Loout ----------
+# ---------- Logout ----------
 @app.route('/Logout')
 def Logout():
     session.clear()
@@ -147,7 +174,7 @@ def Forgot_Password():
 
         conn = db()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM customer WHERE email=%s", (email,))
+        cur.execute("SELECT * FROM ShopKaro_Customers WHERE email=%s", (email,))
         user = cur.fetchone()
         cur.close()
         conn.close()
@@ -192,7 +219,7 @@ def Reset_Password():
             conn = db()
             cur = conn.cursor()
             cur.execute(
-                "UPDATE customer SET passw=%s WHERE email=%s",
+                "UPDATE ShopKaro_Customers SET passw=%s WHERE email=%s",
                 (p1, email)
             )
             conn.commit()
@@ -219,31 +246,38 @@ def Customer_Portal_Dashboard():
     email=session.get('Cust email')
     if num == None:
         return redirect('/')
+    elif session.get('Med num') != None :
+        return redirect("/Mediator_Portal/Dashboard")
 
-    sheet = client.open("Demo Order").sheet1
+    sheet = client.open("ShopKaro").sheet1
     all_values = sheet.get_all_values()
     headers = all_values[0]
     data_rows = all_values[1:]
-    mobile_index = headers.index("Mobile")
+    mobile_index = headers.index("Whatsapp")
     order_id_index = headers.index("Order ID")
-    order_date_index = headers.index("Order date")
+    order_date_index = headers.index("Order Date")
     order_status_index = headers.index("Status")
-    order_cod_index = headers.index("Deal Code")
+    order_brand_index = headers.index("Brand Name")
+    order_refundAmount_index = headers.index("Refund Amount")
+    order_reviewer_index = headers.index("Profile Name")
     user_orders = []
+
 
     TO = 0
     for row in data_rows:
-        if row[mobile_index] == num:
+        if str(row[mobile_index]) == str(num):
             TO+=1
-            user_orders.append((row[order_id_index], row[order_date_index], row[order_status_index], row[order_cod_index]))
+            user_orders.append((row[order_id_index], row[order_date_index], row[order_status_index], row[order_brand_index], row[order_refundAmount_index],row[order_reviewer_index]))
     
     RO = 0
+    Payout=0
     for i in user_orders:
         if i[2]=="Done":
+            Payout+=int(i[4])
             RO+=1
     
     
-    return render_template("Customer_Dashboard.html",orders=user_orders, name=name, num=num, passw=passw, email=email,TO=TO,PO=TO-RO,CO=RO,R=RO*60)
+    return render_template("Customer_Dashboard.html",orders=user_orders, name=name, num=num, passw=passw, email=email,TO=TO,PO=TO-RO,CO=RO,R=Payout)
 
 # ---------- MEDIATOR LOGIN ----------
 @app.route('/Mediator_Login',methods=['GET','POST'])
@@ -256,7 +290,7 @@ def Mediator_Login():
         conn = db()
         cur=conn.cursor()
 
-        cur.execute("SELECT * FROM mediator WHERE username=%s", (MUN,))
+        cur.execute("SELECT * FROM ShopKaro_mediator WHERE username=%s", (MUN,))
         row = cur.fetchone()
 
         if row is None:
@@ -266,6 +300,7 @@ def Mediator_Login():
         else:
             cur.close()
             conn.close()
+            session.permanent = True
             session['Med Username'] = row[1]
             session['Med name'] = row[2]
             session['Med num'] = row[3]
@@ -285,7 +320,7 @@ def MForgot_Password():
 
         conn = db()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM mediator WHERE email=%s", (email,))
+        cur.execute("SELECT * FROM ShopKaro_mediator WHERE email=%s", (email,))
         user = cur.fetchone()
         cur.close()
         conn.close()
@@ -330,7 +365,7 @@ def MReset_Password():
             conn = db()
             cur = conn.cursor()
             cur.execute(
-                "UPDATE mediator SET password=%s WHERE email=%s",
+                "UPDATE ShopKaro_mediator SET password=%s WHERE email=%s",
                 (p1, email)
             )
             conn.commit()
@@ -357,14 +392,32 @@ def Mediator_Portal_Dashboard():
     MN = session.get('Med name')
     MNUM = session.get('Med num')
 
-
     if MUN == None:
         return redirect('/')
-        
-    TO=0
-    RF=0
     
-    return render_template('Mediator_Dashboard.html',Nmsg=Nmsg,Pmsg=Pmsg, MUN=MUN, MN=MN, MNUM=MNUM, TO=TO, RF=RF, TP=RF*60)
+    sheet = client.open("ShopKaro").sheet1
+    sheeturl=sheet.url
+    all_values = sheet.get_all_values()
+    headers = all_values[0]
+    data_rows = all_values[1:]
+    order_status_index = headers.index("Status")
+    order_refundAmount_index = headers.index("Refund Amount")
+    user_orders = []
+
+    TO=0
+    for row in data_rows:
+        TO+=1
+        user_orders.append((row[order_status_index],row[order_refundAmount_index]))
+
+    
+    CO=0
+    Payout=0
+    for i in user_orders:
+        if i[0]=="Done":
+            Payout+=int(i[1])
+            CO+=1
+    
+    return render_template('Mediator_Dashboard.html',Nmsg=Nmsg,Pmsg=Pmsg, MUN=MUN, MN=MN, MNUM=MNUM, TO=TO, CO=CO,PF=(TO-CO), TP=Payout, url=sheeturl)
 
 
 
@@ -376,117 +429,446 @@ def add_deal_code():
     MN = session.get('Med name')
     MNUM = session.get('Med num')
     if request.method=='POST':
-        deal_code = request.form["deal_code"]
+        seller = request.form["deal_code"]
         conn = db()
         cur=conn.cursor()
-        cur.execute("SELECT * FROM deal_codes WHERE deal_code=%s", (deal_code,))
+        cur.execute("SELECT * FROM ShopKaro_Sellers WHERE Seller=%s", (seller,))
         if cur.fetchone():
-            Nmsg = "This Deal Code is already exist"
+            Nmsg = "This Brand is already exist"
             cur.close()
             conn.close()
             return redirect(f'/Mediator_Portal/Dashboard?Nmsg={Nmsg}')
             
         else:
-            cur.execute(
-                "INSERT INTO deal_codes (deal_code) VALUES (%s)",
-                (deal_code,)
-            )
-            conn.commit()
+            
             cur.close()
             conn.close()
-            Pmsg=f"Added {deal_code}"
-            return redirect(f'/Mediator_Portal/Dashboard?Pmsg={Pmsg}')
+            session['Brand'] = seller
+            return redirect('/login')
         
     return redirect('/Mediator_Portal/Dashboard')
+@app.route("/login")
+def login():
+
+    username = session.get("Med Username")
+
+    if not username:
+        return redirect("/Mediator_Login")
+
+    # -------- Check Token in DB --------
+    conn = db()
+    cur = conn.cursor(dictionary=True)
+
+    cur.execute("""
+        SELECT token FROM ShopKaro_mediator
+        WHERE username=%s
+    """, (username,))
+
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    # If token exists → skip Google login
+    if row and row["token"]:
+        return redirect("/create-sheet")
+
+    # -------- Else Google OAuth --------
+    flow = Flow.from_client_secrets_file(
+        clint_secret,
+        scopes=SCOPES,
+        redirect_uri=url_for("callback", _external=True)
+    )
+
+    auth_url, state = flow.authorization_url(prompt="consent")
+    session["state"] = state
+
+    return redirect(auth_url)
+# ---------------- CALLBACK ----------------
+@app.route("/callback")
+def callback():
+
+    flow = Flow.from_client_secrets_file(
+        clint_secret,
+        scopes=SCOPES,
+        state=session["state"],
+        redirect_uri=url_for("callback", _external=True)
+    )
+
+    flow.fetch_token(authorization_response=request.url)
+
+    creds = flow.credentials
+
+    # Save token
+    token_json = creds.to_json()
+
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("UPDATE ShopKaro_mediator SET token=%s WHERE username=%s", (token_json,session["Med Username"]))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect("/create-sheet")
+from google.oauth2.credentials import Credentials
+import json
+def get_mediator_creds(username):
+    conn = db()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("""
+        SELECT token FROM ShopKaro_mediator
+        WHERE username=%s
+    """, (username,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if not row or not row["token"]:
+        return None
+    
+    token_data = json.loads(row["token"])
+    creds = Credentials.from_authorized_user_info(token_data)
+    return creds
+from google.auth.transport.requests import Request
+def refresh_if_needed(creds, username):
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+        # Save updated token
+        conn = db()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE ShopKaro_mediator
+            SET token=%s
+            WHERE username=%s
+        """, (
+            creds.to_json(),
+            username
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+    return creds
+# ---------------- CREATE SHEET ----------------
+from google.auth.transport.requests import Request
+@app.route("/create-sheet")
+def create_sheet():
+
+    username = session["Med Username"]
+
+    creds = get_mediator_creds(username)
+
+    if not creds:
+        return redirect("/login")
+
+    creds = refresh_if_needed(creds, username)
+
+    sheets_service = build("sheets", "v4", credentials=creds)
+    drive_service = build("drive", "v3", credentials=creds)
+
+    # Continue sheet creation...
+
+    # -------- Create Sheet --------
+    Brand=session.get('Brand')
+    spreadsheet = {
+        "properties": {
+            "title": Brand
+        }
+    }
+
+    sheet = sheets_service.spreadsheets().create(
+        body=spreadsheet,
+        fields="spreadsheetId,spreadsheetUrl"
+    ).execute()
+
+    
+
+    sheet_id = sheet["spreadsheetId"]
+    sheet_url = sheet["spreadsheetUrl"]
+
+    # -------- Add Header Row --------
+    headers = [[
+        "Brand Name",
+        "Order Date",
+        "Product Name",
+        "Order ID",
+        "Profile Name",
+        "Order Amount",
+        "Order SS",
+        "Delivered SS",
+        "Review SS",
+        "Review Link",
+        "Status"
+    ]]
+
+    body = {
+        "values": headers
+    }
+
+    sheets_service.spreadsheets().values().update(
+        spreadsheetId=sheet_id,
+        range="A1",
+        valueInputOption="RAW",
+        body=body
+    ).execute()
+
+    # -------- Share Sheet --------
+    permission = {
+        "type": "user",
+        "role": "writer",
+        "emailAddress": "hd-839@last-488313.iam.gserviceaccount.com"   # 👈 Change this
+    }
+
+    drive_service.permissions().create(
+        fileId=sheet_id,
+        body=permission
+    ).execute()
+
+    
+# -------- Format Header Like Screenshot --------
+
+    requests = [
+
+        # Header Style
+        {
+            "repeatCell": {
+                "range": {
+                    "sheetId": 0,
+                    "startRowIndex": 0,
+                    "endRowIndex": 1
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": {
+                            "red": 1,
+                            "green": 0.8,
+                            "blue": 0.2
+                        },
+                        "horizontalAlignment": "CENTER",
+                        "verticalAlignment": "MIDDLE",
+                        "textFormat": {
+                            "fontSize": 18,
+                            "bold": True,
+                            "foregroundColor": {
+                                "red": 0,
+                                "green": 0,
+                                "blue": 0
+                            }
+                        }
+                    }
+                },
+                "fields": "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)"
+            }
+        },
+
+        # Freeze Header Row
+        {
+            "updateSheetProperties": {
+                "properties": {
+                    "sheetId": 0,
+                    "gridProperties": {
+                        "frozenRowCount": 1
+                    }
+                },
+                "fields": "gridProperties.frozenRowCount"
+            }
+        },
+
+        # Set Row Height Bigger
+        {
+            "updateDimensionProperties": {
+                "range": {
+                    "sheetId": 0,
+                    "dimension": "ROWS",
+                    "startIndex": 0,
+                    "endIndex": 1
+                },
+                "properties": {
+                    "pixelSize": 45
+                },
+                "fields": "pixelSize"
+            }
+        }
+    ]
+
+    sheets_service.spreadsheets().batchUpdate(
+        spreadsheetId=sheet_id,
+        body={"requests": requests}
+    ).execute()
+
+    Pmsg=f"Added :- {Brand}"
+    conn = db()
+    cur=conn.cursor()
+    cur.execute("INSERT INTO ShopKaro_Sellers (Seller) VALUES (%s)",(Brand,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect(f'/Mediator_Portal/Dashboard?Pmsg={Pmsg}')
 
 
-@app.route("/orderform", methods=["GET", "POST"])
-def orderform():
-    msg=""
+@app.route("/Brands")
+def Brands():
+
+    MUN = session.get('Med Username')
+    MN = session.get('Med name')
+    MNUM = session.get('Med num')
+
+    brands = []
+
     conn = db()
     cursor = conn.cursor()
-    cursor.execute("SELECT deal_code FROM deal_codes")
-    deal_data = cursor.fetchall()
+    cursor.execute("SELECT Seller FROM ShopKaro_Sellers")
+    db_brands = cursor.fetchall()
     cursor.close()
     conn.close()
 
-    name=session.get('Cust name')
-    num=session.get('Cust num')
-    passw=session.get('Cust passw')
-    email=session.get('Cust email')
-    
-    if request.method == "POST":
-        OSheet= client.open("Demo Order").sheet1
-        
-        deal_code   = request.form.get("deal_code")
-        order_id       = request.form.get("order_id").replace(" ","")
-        date_input     = request.form.get("order_date")
-        order_date = datetime.strptime(date_input, "%Y-%m-%d").strftime("%d-%m-%Y")
-        amount         = int(request.form.get("amount"))
-        deal_type      = 'COD Deal'
-        reviewer_name  = request.form.get("reviewer_name")
-        Product_name       = request.form.get("PN")
+    for b in db_brands:
+        brandSheet = client.open(b[0]).sheet1
+        url=brandSheet.url
+        data = brandSheet.get_all_values()
+        row = data[1:]
+        brands.append((b[0], len(row),url))
 
-        all_values = OSheet.get_all_values()
-        headers = all_values[0]
-        data_rows = all_values[1:]
-        order_id_index = headers.index("Order ID")
-        for row in data_rows:
-            if row[order_id_index] == order_id:
-                msg="This Order ID is Already Filled"
-                return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data,msg=msg)
-        
+    return render_template("Brands.html", MUN=MUN, MN=MN, MNUM=MNUM, brands=brands)
+   
+
+@app.route("/delete-brand/<brand>")
+def delete_brand(brand):
+
+    username = session.get("Med Username")
+
+    if not username:
+        return redirect("/")
+
+    creds = get_mediator_creds(username)
+    creds = refresh_if_needed(creds, username)
+
+    drive_service = build("drive", "v3", credentials=creds)
+
+    try:
+        spreadsheet = client.open(brand)
+        sheet_id = spreadsheet.id
+
+        # 🔥 Delete using mediator (Owner)
+        drive_service.files().delete(fileId=sheet_id).execute()
+
+    except Exception as e:
+        print("Delete Error:", e)
+
+    # 🔹 Remove brand from MySQL
+    conn = db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM ShopKaro_Sellers WHERE Seller=%s", (brand,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect("/Mediator_Portal/Dashboard")
+
+
+def safe_append(sheet, data_dict):
+    headers = sheet.row_values(1)  # First row = header
+    row = []
+    for header in headers:
+        row.append(data_dict.get(header, ""))  # Missing column = blank
+    sheet.append_row(row)
+@app.route("/orderform", methods=["GET", "POST"])
+def orderform():
+    name = session.get('Cust name')
+    num = session.get('Cust num')
+    passw = session.get('Cust passw')
+    email = session.get('Cust email')
+    upi = session.get("Cust upi")
+    if request.method == "POST":
+
+        brand = request.form.get("brand")
+        order_id = request.form.get("order_id").replace(" ", "")
+        date_input = request.form.get("order_date")
+        order_date = datetime.strptime(date_input, "%Y-%m-%d").strftime("%d-%m-%Y")
+        reviewer_name = request.form.get("reviewer_name")
+        Product_name = request.form.get("PN")
+        Oamount = int(request.form.get("amount"))
+        Ramount = int(request.form.get("refund_amount"))
+        upi = request.form.get("upi")
+
+        OSheet = client.open("ShopKaro").sheet1
+        BrandSheet = client.open(brand).sheet1
+
+        now = datetime.now().replace(microsecond=0)
+
+        url = ""   # 🔥 important fix (avoid undefined error)
 
         Order_SS = request.files.get("screenshot")
         if Order_SS:
             result = cloudinary.uploader.upload(Order_SS)
             url = result['secure_url']
-            
-        SellerO_sheet= client.open("Done Order Form").sheet1
-        CodeSheet= client.open(deal_code).sheet1
-        now = datetime.now().replace(microsecond=0)
-        OSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num),'Pending'])
-        SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani"])
-        CodeSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num),'Pending'])
-        
+
+        # 🔥 Header-based mapping
+        data = {
+            "TimeStamp": str(now),
+            "Brand Name": brand,
+            "Profile Name": reviewer_name,
+            "Order Date": order_date,
+            "Product Name": Product_name,
+            "Order SS": url,
+            "Order Amount": Oamount,
+            "Order ID": order_id,
+            "Email": email,
+            "Whatsapp": int(num),
+            "Status": "Pending",
+            "UPI ID": upi,
+            "Refund Amount": Ramount,
+            "Mediator name": 'ShopKaro'
+        }
+
+        safe_append(OSheet, data)
+        safe_append(BrandSheet, data)
+
         return render_template("order_success.html")
-    
-    return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data,msg=msg)
+
+    # -------- GET REQUEST PART --------
+    conn = db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT Seller FROM ShopKaro_Sellers")
+    brands = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "Customer_Order_Form.html",
+        upi = upi,
+        name=name,
+        num=num,
+        passw=passw,
+        email=email,
+        brands=brands
+    )
 
 
 @app.route("/refundform", methods=["GET", "POST"])
 def refundform():
-    conn = db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT deal_code FROM deal_codes")
-    deal_data = cursor.fetchall()
-    cursor.close()
-    conn.close()
     msg=""
     id = request.args.get("id")
     DC = request.args.get("DealCode")
+    RN = request.args.get("ProfileName")
     name=session.get('Cust name')
     num=session.get('Cust num')
     passw=session.get('Cust passw')
     email=session.get('Cust email')
     if request.method == "POST":
-        RSheet= client.open("Demo Refund").sheet1
-        SellerR_sheet= client.open("Done Refund form").sheet1
-        OrderSheet = client.open("Demo Order").sheet1
+        
+        
+        OrderSheet = client.open("ShopKaro").sheet1
         
         if DC :
             deal_code=DC
         else:
             deal_code   = request.form.get("deal_code")
-        CodeSheet= client.open(deal_code).sheet1
+        
         if id :
             order_id=id.replace(" ","")
         else:
             order_id       = request.form.get("order_id_p").replace(" ","")
-        date_input     = request.form.get("order_date")
-        order_date = datetime.strptime(date_input, "%Y-%m-%d").strftime("%d-%m-%Y")
-        Product_name         = request.form.get("PN")
-        deal_type      = 'COD Deal'
+
+        
         reviewer_name  = request.form.get("reviewer_name")
         link           = request.form.get("link")
 
@@ -494,12 +876,11 @@ def refundform():
         headers = all_values[0]
         data_rows = all_values[1:]
         order_id_index = headers.index("Order ID")
-        order_mobile_index = headers.index("Mobile")
+        order_mobile_index = headers.index("Whatsapp")
         status_col   = headers.index("Status")
         Dss_col      = headers.index("Delivered SS")
         Rss_col      = headers.index("Review SS")
         RL_col       = headers.index("Review Link")
-        user_orders = []
 
 
         flag = 0
@@ -508,13 +889,12 @@ def refundform():
                 flag=1
                 break
             
-
         if flag == 0:
             msg="Invalid Order-ID"
             if id != 'undefined' :
-                return render_template("Customer_Refund_Form.html",DC=DC,msg=msg,id=id, name=name, num=num, passw=passw, email=email,deals=deal_data)
+                return render_template("Customer_Refund_Form.html",RN=RN,DC=DC,msg=msg,id=id, name=name, num=num, passw=passw, email=email)
             else :
-                return render_template("Customer_Refund_Form.html",DC=DC,msg=msg, name=name, num=num, passw=passw, email=email,deals=deal_data)
+                return render_template("Customer_Refund_Form.html",RN=RN,DC=DC,msg=msg, name=name, num=num, passw=passw, email=email)
 
         else:
             Review_SS = request.files.get("Review-screenshot")
@@ -527,10 +907,6 @@ def refundform():
                 result = cloudinary.uploader.upload(D_SS)
                 D_url = result['secure_url']
 
-            now = datetime.now().replace(microsecond=0)
-            RSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani",int(num),email])
-            SellerR_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani"])
-
 
             for i, row in enumerate(data_rows, start=2):
                 if row[order_id_index] == order_id:
@@ -540,7 +916,9 @@ def refundform():
                     OrderSheet.update_cell(i, RL_col + 1, link)
                     break
 
-            Call_values = CodeSheet.get_all_values()
+            
+            BrandSheet= client.open(deal_code).sheet1
+            Call_values = BrandSheet.get_all_values()
             Cheaders = Call_values[0]
             Cdata_rows = Call_values[1:]
             Corder_id_index = Cheaders.index("Order ID")
@@ -548,26 +926,35 @@ def refundform():
             CDss_col      = Cheaders.index("Delivered SS")
             CRss_col      = Cheaders.index("Review SS")
             CRL_col       = Cheaders.index("Review Link")
-
-
             for i, row in enumerate(Cdata_rows, start=2):
                 if row[Corder_id_index] == order_id:
-                    CodeSheet.update_cell(i, Cstatus_col + 1, "Done")
-                    CodeSheet.update_cell(i, CDss_col + 1, D_url)
-                    CodeSheet.update_cell(i, CRss_col + 1, Review_url)
-                    CodeSheet.update_cell(i, CRL_col + 1, link)
+                    BrandSheet.update_cell(i, Cstatus_col + 1, "Done")
+                    BrandSheet.update_cell(i, CDss_col + 1, D_url)
+                    BrandSheet.update_cell(i, CRss_col + 1, Review_url)
+                    BrandSheet.update_cell(i, CRL_col + 1, link)
                     break
 
             return render_template("order_success.html")
     
     if id != 'undefined' :
-        return render_template("Customer_Refund_Form.html",DC=DC,id=id,msg=msg, name=name, num=num, passw=passw, email=email,deals=deal_data)
+        return render_template("Customer_Refund_Form.html",RN=RN,DC=DC,id=id,msg=msg, name=name, num=num, passw=passw, email=email)
     else :
-        return render_template("Customer_Refund_Form.html",DC=DC, name=name,msg=msg, num=num, passw=passw, email=email,deals=deal_data)
+        return render_template("Customer_Refund_Form.html",RN=RN,DC=DC, name=name,msg=msg, num=num, passw=passw, email=email)
+
+@app.route("/open-sheet/<Name>")
+def open_sheet(Name):
+
+    spreadsheet = client.open(Name)   # existing sheet open
+    sheet_url = spreadsheet.url        # get link
+
+    return redirect(sheet_url)
+
+
 
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
