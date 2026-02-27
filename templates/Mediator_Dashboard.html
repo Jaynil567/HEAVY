@@ -1,124 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Mediator Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Mediator Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-    font-family:'Inter',sans-serif;
-    background:#0f172a;
-    color:#e5e7eb;
-}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
 
-/* ===== SIDEBAR ===== */
-.sidebar{
-    position:fixed;
-    top:0;
-    left:0;
-    width:230px;
-    height:100vh;
-    background:#020617;
-    padding:20px;
-}
-.sidebar h4{
-    color:#facc15;
-    margin-bottom:30px;
-    font-weight:700;
-}
-.sidebar a{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:12px;
-    color:#cbd5f5;
-    text-decoration:none;
-    border-radius:8px;
-    margin-bottom:6px;
-    font-size:14px;
-}
-.sidebar a:hover,
-.sidebar a.active{
-    background:#1e293b;
-    color:#ffffff;
-}
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e5e7eb;
+        }
 
-/* ===== TOPBAR ===== */
-.topbar{
-    height:56px;
-    margin-left:230px;
-    background:#020617;
-    border-bottom:1px solid #1e293b;
-    display:flex;
-    align-items:center;
-    padding:0 18px;
-}
-.menu-btn{
-    font-size:1.5rem;
-    cursor:pointer;
-    display:none;
-    color:#f8fafc;
-}
-.top-title{
-    font-weight:600;
-    font-size:16px;
-}
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 230px;
+            height: 100vh;
+            background: #020617;
+            padding: 20px;
+        }
 
-/* ===== PROFILE ===== */
-.profile{
-    margin-left:auto;
-    display:flex;
-    align-items:center;
-}
-.profile-name{
-    font-size:14px;
-    font-weight:600;
-}
-.profile-role{
-    font-size:11px;
-    color:#94a3b8;
-}
-.avatar{
-    width:38px;
-    height:38px;
-    border-radius:50%;
-    background:linear-gradient(135deg,#f59e0b,#facc15);
-    color:#020617;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:700;
-    margin-left:10px;
-}
+        .sidebar h4 {
+            color: #facc15;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
 
-/* ===== MAIN ===== */
-.main{
-    margin-left:230px;
-    padding:24px;
-}
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            color: #cbd5f5;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
 
-/* ===== STATS ===== */
-.stats{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:16px;
-    margin-bottom:24px;
-}
-.stat-card{
-    background:#020617;
-    border:1px solid #1e293b;
-    border-radius:14px;
-    padding:18px;
-    transition:.3s;
-}
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #1e293b;
+            color: #ffffff;
+        }
 
-@media (max-width: 768px) {
+        /* ===== TOPBAR ===== */
+        .topbar {
+            height: 56px;
+            margin-left: 230px;
+            background: #020617;
+            border-bottom: 1px solid #1e293b;
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+        }
+
+        .menu-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: none;
+            color: #f8fafc;
+        }
+
+        .top-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* ===== PROFILE ===== */
+        .profile {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .profile-role {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #facc15);
+            color: #020617;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-left: 10px;
+        }
+
+        /* ===== MAIN ===== */
+        .main {
+            margin-left: 230px;
+            padding: 24px;
+        }
+
+        /* ===== STATS ===== */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+            padding: 18px;
+            transition: .3s;
+        }
+
+        @media (max-width: 768px) {
 
             .stats {
                 grid-template-columns: repeat(2, 1fr);
@@ -136,215 +151,230 @@ body{
             }
         }
 
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0 0 1px #facc15;
+        }
 
-.stat-card:hover{
-    transform:translateY(-4px);
-    box-shadow:0 0 0 1px #facc15;
-}
-.stat-icon{
-    font-size:22px;
-    margin-bottom:10px;
-}
-.stat-value{
-    font-size:22px;
-    font-weight:700;
-}
-.stat-label{
-    font-size:13px;
-    color:#94a3b8;
-}
+        .stat-icon {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
 
-/* ===== WELCOME ===== */
-.welcome{
-    background:linear-gradient(135deg,#1e293b,#020617);
-    border-radius:16px;
-    padding:22px;
-    border:1px solid #1e293b;
-}
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+        }
 
-/* ===== RESPONSIVE ===== */
-@media(max-width:768px){
-    .sidebar{left:-240px}
-    .sidebar.active{left:0}
-    .topbar,.main{margin-left:0}
-    .menu-btn{display:block}
-}
+        .stat-label {
+            font-size: 13px;
+            color: #94a3b8;
+        }
 
-/* Sidebar */
-@media (max-width: 768px) {
-#sidebar {
-    position: fixed;
-    left: -260px;
-    top: 0;
-    width: 260px;
-    height: 100%;
-    background: #111;
-    transition: 0.3s;
-    z-index: 1000;
-}
+        /* ===== WELCOME ===== */
+        .welcome {
+            background: linear-gradient(135deg, #1e293b, #020617);
+            border-radius: 16px;
+            padding: 22px;
+            border: 1px solid #1e293b;
+        }
 
-/* Open sidebar */
-#sidebar.active {
-    left: 0;
-}
-}
+        /* ===== RESPONSIVE ===== */
+        @media(max-width:768px) {
+            .sidebar {
+                left: -240px
+            }
 
-/* Overlay */
-#overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    z-index: 999;
-}
+            .sidebar.active {
+                left: 0
+            }
 
-#overlay.active {
-    display: block;
-}
-</style>
+            .topbar,
+            .main {
+                margin-left: 0
+            }
+
+            .menu-btn {
+                display: block
+            }
+        }
+
+        /* Sidebar */
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                width: 260px;
+                height: 100%;
+                background: #111;
+                transition: 0.3s;
+                z-index: 1000;
+            }
+
+            /* Open sidebar */
+            #sidebar.active {
+                left: 0;
+            }
+        }
+
+        /* Overlay */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        #overlay.active {
+            display: block;
+        }
+    </style>
 </head>
 
 <body>
-<div id="overlay"></div>
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-    <h4>Heavy Deals</h4>
-    <a href="/Mediator_Portal/Dashboard" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="https://docs.google.com/spreadsheets/d/15pc8zZobJccKS2OzYqMTCLxRz-M6SF5zJNTRyJSkuOs/edit?usp=sharing" target="_blank"><i class="bi bi-mailbox"></i> Order Forms</a>
-    <a href="https://docs.google.com/spreadsheets/d/1YuTxBUM-1cH_eiQpCeLBydi-KZf27mfjx74KBTxcJ0Q/edit?usp=sharing" target="_blank"><i class="bi bi-journal-bookmark-fill"></i> Refund Forms</a>
-    <a href="#"><i class="bi bi-send-slash"></i> Send Refund Form Requist</a>
-    <a href="#"><i class="bi bi-gear"></i> Settings</a>
-    <a href="/Logout" class="text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
-</div>
-
-<!-- TOPBAR -->
-<div class="topbar">
-    <i class="bi bi-list menu-btn" onclick="openSidebar()"></i>
-    <div class="top-title">Dashboard</div>
-
-    <div class="profile">
-        <div class="text-end me-2">
-            <div class="profile-name">{{ MN }}</div>
-            <div class="profile-role">Mediator</div>
-        </div>
-        <div class="avatar">{{ MN[0] }}</div>
+    <div id="overlay"></div>
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <h4>ShopKaro Deals</h4>
+        <a href="#" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="{{ url }}" target="_blank"><i class="bi bi-mailbox"></i> Google Sheet</a>
+        <a href="/Brands"><i class="bi bi-send-slash"></i> Brands</a>
+        <a href="#"><i class="bi bi-gear"></i> Settings</a>
+        <a href="/Logout" class="text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
     </div>
-</div>
 
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <i class="bi bi-list menu-btn" onclick="openSidebar()"></i>
+        <div class="top-title">Dashboard</div>
 
-
-<!-- MAIN -->
-<div class="main">
-<div class="welcome mb-3">
-        <h5>Welcome, {{ MN }} 👋</h5>
-    </div>
-    <div class="stats">
-        <div class="stat-card">
-            <div class="stat-icon text-info"><i class="bi bi-box"></i></div>
-            <div class="stat-value">{{TO}}</div>
-            <div class="stat-label">Total Orders</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon text-success"><i class="bi bi-check-circle"></i></div>
-            <div class="stat-value">{{TO}}</div>
-            <div class="stat-label">Order Forms</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon text-warning"><i class="bi bi-clock"></i></div>
-            <div class="stat-value">{{RF}}</div>
-            <div class="stat-label">Refund Forms</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon text-primary"><i class="bi bi-wallet2"></i></div>
-            <div class="stat-value">₹{{TP}}</div>
-            <div class="stat-label">Total Payout</div>
+        <div class="profile">
+            <div class="text-end me-2">
+                <div class="profile-name">{{ MN }}</div>
+                <div class="profile-role">Mediator</div>
+            </div>
+            <div class="avatar">{{ MN[0] }}</div>
         </div>
     </div>
 
-    <form method="POST" action="/add_deal_code" class="d-flex justify-content-end mt-3">
-    <input 
-        type="text" 
-        name="deal_code" 
-        class="form-control me-2 w-25"
-        placeholder="Enter New Deal Code"
-        required
-    >
-    <button type="submit" class="btn btn-warning fw-semibold">
-        <i class="bi bi-plus-circle"></i> Add Deal
-    </button>
-</form>
-<br>
-{% if Nmsg %}
-<div class="d-flex justify-content-end">
-<div class="alert alert-danger text-center ">
-    {{ Nmsg }}
-</div></div>
-{% endif %}
-{% if Pmsg %}
-<div class="d-flex justify-content-end">
-<div class="alert alert-success text-center ">
-    {{ Pmsg }}
-</div></div>
-{% endif %}
-
-    
-
-   
 
 
+    <!-- MAIN -->
+    <div class="main">
+        <div class="welcome mb-3">
+            <h5>Welcome, {{ MN }} 👋</h5>
+        </div>
+        <div class="stats">
+            <div class="stat-card" onclick="window.open('{{ url }}', '_blank')">
+                <div class="stat-icon text-info"><i class="bi bi-box"></i></div>
+                <div class="stat-value">{{TO}}</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-success"><i class="bi bi-check-circle"></i></div>
+                <div class="stat-value">{{CO}}</div>
+                <div class="stat-label">Complete Forms</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-warning"><i class="bi bi-clock"></i></div>
+                <div class="stat-value">{{PF}}</div>
+                <div class="stat-label">Pending Forms</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon text-primary"><i class="bi bi-wallet2"></i></div>
+                <div class="stat-value">₹{{TP}}</div>
+                <div class="stat-label">Total Payout</div>
+            </div>
+        </div>
 
-</div>
+        <form method="POST" action="/add_deal_code" class="d-flex justify-content-end mt-3">
+            <input type="text" name="deal_code" class="form-control me-2 w-25" placeholder="Enter New Brand Name"
+                required>
+            <button type="submit" class="btn btn-warning fw-semibold">
+                <i class="bi bi-plus-circle"></i> Add Brand
+            </button>
+        </form>
+        <br>
+        {% if Nmsg %}
+        <div class="d-flex justify-content-end">
+            <div class="alert alert-danger text-center ">
+                {{ Nmsg }}
+            </div>
+        </div>
+        {% endif %}
+        {% if Pmsg %}
+        <div class="d-flex justify-content-end">
+            <div class="alert alert-success text-center ">
+                {{ Pmsg }}
+            </div>
+        </div>
+        {% endif %}
 
 
 
 
 
-<script>
 
-document.addEventListener("click", function(e) {
-    let sidebar = document.querySelector(".sidebar");
 
-    // ONLY mobile par close hoga
-    if (window.innerWidth <= 768) {
-        if (!e.target.closest(".sidebar") && !e.target.closest(".menu-btn")) {
-            sidebar.classList.remove("active");
+    </div>
+
+
+
+
+
+    <script>
+
+        function OpenSheet(Name) {
+            window.location.href = '/open-sheet/' + Name;
         }
-    }
-});
+
+        document.addEventListener("click", function (e) {
+            let sidebar = document.querySelector(".sidebar");
+
+            // ONLY mobile par close hoga
+            if (window.innerWidth <= 768) {
+                if (!e.target.closest(".sidebar") && !e.target.closest(".menu-btn")) {
+                    sidebar.classList.remove("active");
+                }
+            }
+        });
 
 
-const sidebar = document.getElementById("sidebar");
-const overlay = document.getElementById("overlay");
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
 
-// open sidebar
-function openSidebar() {
-    sidebar.classList.add("active");
-    overlay.classList.add("active");
-}
+        // open sidebar
+        function openSidebar() {
+            sidebar.classList.add("active");
+            overlay.classList.add("active");
+        }
 
-// close sidebar
-function closeSidebar() {
-    sidebar.classList.remove("active");
-    overlay.classList.remove("active");
-}
+        // close sidebar
+        function closeSidebar() {
+            sidebar.classList.remove("active");
+            overlay.classList.remove("active");
+        }
 
-// overlay click -> close sidebar
-overlay.addEventListener("click", closeSidebar);
+        // overlay click -> close sidebar
+        overlay.addEventListener("click", closeSidebar);
 
-// outside click (optional advanced)
-document.addEventListener("click", function(e) {
-    if (!sidebar.contains(e.target) && !e.target.closest(".menu-btn")) {
-        closeSidebar();
-    }
-});
+        // outside click (optional advanced)
+        document.addEventListener("click", function (e) {
+            if (!sidebar.contains(e.target) && !e.target.closest(".menu-btn")) {
+                closeSidebar();
+            }
+        });
 
-function toggleSidebar(){
-    document.getElementById("sidebar").classList.toggle("active");
-}
-</script>
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("active");
+        }
+    </script>
 
 </body>
+
 </html>
