@@ -402,6 +402,7 @@ def add_deal_code():
 
 @app.route("/orderform", methods=["GET", "POST"])
 def orderform():
+    msg=""
     name=session.get('Cust name')
     num=session.get('Cust num')
     passw=session.get('Cust passw')
@@ -409,7 +410,7 @@ def orderform():
     
     if request.method == "POST":
         OSheet= client.open("Demo Order").sheet1
-        SellerO_sheet= client.open("Done Order Form").sheet1
+        
         deal_code   = request.form.get("deal_code")
         order_id       = request.form.get("order_id").replace(" ","")
         date_input     = request.form.get("order_date")
@@ -418,13 +419,24 @@ def orderform():
         deal_type      = 'COD Deal'
         reviewer_name  = request.form.get("reviewer_name")
         Product_name       = request.form.get("PN")
-        CodeSheet= client.open(deal_code).sheet1
+
+        all_values = OrderSheet.get_all_values()
+        headers = all_values[0]
+        data_rows = all_values[1:]
+        order_id_index = headers.index("Order ID")
+        for row in data_rows:
+            if row[order_id_index] == order_id:
+                msg="This Order ID is Already Filled"
+                return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data,msg=msg)
+        
 
         Order_SS = request.files.get("screenshot")
         if Order_SS:
             result = cloudinary.uploader.upload(Order_SS)
             url = result['secure_url']
-        
+            
+        SellerO_sheet= client.open("Done Order Form").sheet1
+        CodeSheet= client.open(deal_code).sheet1
         now = datetime.now().replace(microsecond=0)
         OSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num),'Pending'])
         SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani"])
@@ -438,7 +450,7 @@ def orderform():
     cursor.close()
     conn.close()
 
-    return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data)
+    return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data,msg=msg)
 
 
 @app.route("/refundform", methods=["GET", "POST"])
@@ -555,6 +567,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
