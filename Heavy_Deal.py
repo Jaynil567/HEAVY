@@ -403,6 +403,13 @@ def add_deal_code():
 @app.route("/orderform", methods=["GET", "POST"])
 def orderform():
     msg=""
+    conn = db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT deal_code FROM deal_codes")
+    deal_data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
     name=session.get('Cust name')
     num=session.get('Cust num')
     passw=session.get('Cust passw')
@@ -443,13 +450,7 @@ def orderform():
         CodeSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num),'Pending'])
         
         return render_template("order_success.html")
-    conn = db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT deal_code FROM deal_codes")
-    deal_data = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
+    
     return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data,msg=msg)
 
 
@@ -567,6 +568,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
