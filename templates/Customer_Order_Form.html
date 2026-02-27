@@ -225,6 +225,14 @@ body{
     <div class="card p-4"
          style="background:#020617;border:1px solid #1e293b;border-radius:16px;">
 
+
+        {% if msg %}
+        <div class="alert alert-danger text-center py-2">
+        {{ msg }}
+        </div>
+        {% endif %}
+
+        
         <form method="POST" enctype="multipart/form-data">
 
             <div class="row g-3">
@@ -332,6 +340,7 @@ function toggleSidebar(){
 
 </body>
 </html>
+
 
 
 
