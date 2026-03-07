@@ -17,7 +17,7 @@ cloudinary.config(
     api_secret="BQ1CJTtlscFnilZ1OnU-MBgZ6vA"
 )
 
-scope = ["https://spreadsheets.google.com/feeds",
+SCOPES = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
 
 google_creds = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
@@ -536,4 +536,5 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
