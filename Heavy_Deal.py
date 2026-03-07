@@ -418,7 +418,7 @@ def orderform():
         deal_type      = 'COD Deal'
         reviewer_name  = request.form.get("reviewer_name")
         Product_name       = request.form.get("PN")
-        CodeSheet= client.open(deal_code).sheet1
+        
 
         Order_SS = request.files.get("screenshot")
         if Order_SS:
@@ -428,7 +428,6 @@ def orderform():
         now = datetime.now().replace(microsecond=0)
         OSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num),'Pending'])
         SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani"])
-        CodeSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num),'Pending'])
         
         return render_template("order_success.html")
     conn = db()
@@ -465,7 +464,6 @@ def refundform():
             deal_code=DC
         else:
             deal_code   = request.form.get("deal_code")
-        CodeSheet= client.open(deal_code).sheet1
         if id :
             order_id=id.replace(" ","")
         else:
@@ -527,24 +525,7 @@ def refundform():
                     OrderSheet.update_cell(i, RL_col + 1, link)
                     break
 
-            Call_values = CodeSheet.get_all_values()
-            Cheaders = Call_values[0]
-            Cdata_rows = Call_values[1:]
-            Corder_id_index = Cheaders.index("Order ID")
-            Cstatus_col   = Cheaders.index("Status")
-            CDss_col      = Cheaders.index("Delivered SS")
-            CRss_col      = Cheaders.index("Review SS")
-            CRL_col       = Cheaders.index("Review Link")
-
-
-            for i, row in enumerate(Cdata_rows, start=2):
-                if row[Corder_id_index] == order_id:
-                    CodeSheet.update_cell(i, Cstatus_col + 1, "Done")
-                    CodeSheet.update_cell(i, CDss_col + 1, D_url)
-                    CodeSheet.update_cell(i, CRss_col + 1, Review_url)
-                    CodeSheet.update_cell(i, CRL_col + 1, link)
-                    break
-
+            
             return render_template("order_success.html")
     
     if id != 'undefined' :
@@ -555,3 +536,4 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
