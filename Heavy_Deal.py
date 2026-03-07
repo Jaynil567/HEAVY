@@ -435,7 +435,7 @@ def orderform():
         for row in data_rows:
             if row[order_id_index] == order_id:
                 msg="This Order ID is already filled"
-                return render_template("Customer_Order_Form.html",upi = upi,name=name,num=num,passw=passw,email=email,brands=brands,msg=msg)
+                return render_template("Customer_Order_Form.html",name=name,num=num,passw=passw,email=email,brands=brands,msg=msg)
         
         Order_SS = request.files.get("screenshot")
         if Order_SS:
@@ -548,6 +548,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
