@@ -406,6 +406,13 @@ def orderform():
     num=session.get('Cust num')
     passw=session.get('Cust passw')
     email=session.get('Cust email')
+    msg=""
+    conn = db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT deal_code FROM deal_codes")
+    deal_data = cursor.fetchall()
+    cursor.close()
+    conn.close()
     
     if request.method == "POST":
         OSheet= client.open("Demo Order").sheet1
@@ -418,8 +425,18 @@ def orderform():
         deal_type      = 'COD Deal'
         reviewer_name  = request.form.get("reviewer_name")
         Product_name       = request.form.get("PN")
-        
 
+        OSheet = client.open("Demo Order").sheet1
+        all_values = OSheet.get_all_values()
+        headers = all_values[0]
+        data_rows = all_values[1:]
+        order_id_index = headers.index("Order ID")
+        user_orders = []
+        for row in data_rows:
+            if row[order_id_index] == order_id:
+                msg="This Order ID is already filled"
+                return render_template("Customer_Order_Form.html",upi = upi,name=name,num=num,passw=passw,email=email,brands=brands,msg=msg)
+        
         Order_SS = request.files.get("screenshot")
         if Order_SS:
             result = cloudinary.uploader.upload(Order_SS)
@@ -430,12 +447,7 @@ def orderform():
         SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani"])
         
         return render_template("order_success.html")
-    conn = db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT deal_code FROM deal_codes")
-    deal_data = cursor.fetchall()
-    cursor.close()
-    conn.close()
+    
 
     return render_template("Customer_Order_Form.html", name=name, num=num, passw=passw, email=email,deals=deal_data)
 
@@ -536,5 +548,6 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
