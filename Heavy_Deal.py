@@ -552,8 +552,6 @@ def refundform():
             now = datetime.now().replace(microsecond=0)
 
             
-            RSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani",int(num),email])
-            SellerR_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani"])
 
 
             for i, row in enumerate(data_rows, start=2):
@@ -574,7 +572,7 @@ def refundform():
             SRL_col       = Sheaders.index("Review Link")
 
             for i, row in enumerate(Sdata_rows, start=2):
-                if row[order_id_index] == order_id:
+                if row[Sorder_id_index] == order_id:
                     OrderSheet.update_cell(i, Sstatus_col + 1, "Done")
                     OrderSheet.update_cell(i, SDss_col + 1, D_url)
                     OrderSheet.update_cell(i, SRss_col + 1, Review_url)
@@ -591,6 +589,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
