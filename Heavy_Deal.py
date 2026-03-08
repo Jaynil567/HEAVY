@@ -573,10 +573,10 @@ def refundform():
 
             for i, row in enumerate(Sdata_rows, start=2):
                 if row[Sorder_id_index] == order_id:
-                    OrderSheet.update_cell(i, Sstatus_col + 1, "Done")
-                    OrderSheet.update_cell(i, SDss_col + 1, D_url)
-                    OrderSheet.update_cell(i, SRss_col + 1, Review_url)
-                    OrderSheet.update_cell(i, SRL_col + 1, link)
+                    SellerO_sheet.update_cell(i, Sstatus_col + 1, "Done")
+                    SellerO_sheet.update_cell(i, SDss_col + 1, D_url)
+                    SellerO_sheet.update_cell(i, SRss_col + 1, Review_url)
+                    SellerO_sheet.update_cell(i, SRL_col + 1, link)
                     break
 
             return render_template("order_success.html")
@@ -589,6 +589,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
