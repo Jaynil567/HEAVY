@@ -399,6 +399,15 @@ def add_deal_code():
         
     return redirect('/Mediator_Portal/Dashboard')
 
+def safe_append(sheet, data_dict):
+    headers = sheet.row_values(1)
+    row = []
+    for header in headers:
+        row.append(data_dict.get(header, ""))
+    # find next empty row
+    data = sheet.get_all_values()
+    next_row = len(data) + 1
+    sheet.insert_row(row, next_row)
 
 @app.route("/orderform", methods=["GET", "POST"])
 def orderform():
@@ -416,7 +425,7 @@ def orderform():
     
     if request.method == "POST":
         OSheet= client.open("Demo Order").sheet1
-        SellerO_sheet= client.open("Done Order Form").sheet1
+        SellerO_sheet= client.open("Web orders(Jaynil)").sheet1
         deal_code   = request.form.get("deal_code")
         order_id       = request.form.get("order_id").replace(" ","")
         date_input     = request.form.get("order_date")
@@ -443,8 +452,26 @@ def orderform():
             url = result['secure_url']
         
         now = datetime.now().replace(microsecond=0)
-        OSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,email,"Jaynil Bhalani",int(num),'Pending'])
-        SellerO_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,url,amount,order_id,"Jaynil Bhalani"])
+        
+        
+        data = {
+            "Timestamp": str(now),
+            "Deal Code":deal_code,
+            "Reviewer name": reviewer_name,
+            "Order date": order_date,
+            "Deal Type":deal_type,
+            "Product name": Product_name,
+            "SS": url,
+            "Order Amount": amount,
+            "Order ID": order_id,
+            "Email": email,
+            "Med-Name":"Jaynil Bhalani"
+            "Mobile": int(num),
+            "Status": "Pending"
+        }
+
+        safe_append(OSheet, data)
+        safe_append(SellerO_sheet, data)
         
         return render_template("order_success.html")
     
@@ -548,6 +575,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
