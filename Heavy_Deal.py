@@ -506,11 +506,6 @@ def refundform():
             order_id=id.replace(" ","")
         else:
             order_id       = request.form.get("order_id_p").replace(" ","")
-        date_input     = request.form.get("order_date")
-        order_date = datetime.strptime(date_input, "%Y-%m-%d").strftime("%d-%m-%Y")
-        Product_name         = request.form.get("PN")
-        deal_type      = 'COD Deal'
-        reviewer_name  = request.form.get("reviewer_name")
         link           = request.form.get("link")
 
         all_values = OSheet.get_all_values()
@@ -589,6 +584,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
