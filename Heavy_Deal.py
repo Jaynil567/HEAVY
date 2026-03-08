@@ -495,9 +495,8 @@ def refundform():
     passw=session.get('Cust passw')
     email=session.get('Cust email')
     if request.method == "POST":
-        RSheet= client.open("Demo Refund").sheet1
-        SellerR_sheet= client.open("Done Refund form").sheet1
-        OrderSheet = client.open("Demo Order").sheet1
+        OSheet= client.open("Demo Order").sheet1
+        SellerO_sheet= client.open("Web orders(Jaynil)").sheet1
         
         if DC :
             deal_code=DC
@@ -514,7 +513,7 @@ def refundform():
         reviewer_name  = request.form.get("reviewer_name")
         link           = request.form.get("link")
 
-        all_values = OrderSheet.get_all_values()
+        all_values = OSheet.get_all_values()
         headers = all_values[0]
         data_rows = all_values[1:]
         order_id_index = headers.index("Order ID")
@@ -550,8 +549,9 @@ def refundform():
             if D_SS:
                 result = cloudinary.uploader.upload(D_SS)
                 D_url = result['secure_url']
-
             now = datetime.now().replace(microsecond=0)
+
+            
             RSheet.append_row([str(now),deal_code,reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani",int(num),email])
             SellerR_sheet.append_row([reviewer_name,order_date,deal_type,Product_name,D_url,order_id,Review_url,link,"Jaynil Bhalani"])
 
@@ -564,7 +564,23 @@ def refundform():
                     OrderSheet.update_cell(i, RL_col + 1, link)
                     break
 
-            
+            Sall_values = SellerO_sheet.get_all_values()
+            Sheaders = Sall_values[0]
+            Sdata_rows = Sall_values[1:]
+            Sorder_id_index = Sheaders.index("Order ID")
+            Sstatus_col   = Sheaders.index("Status")
+            SDss_col      = Sheaders.index("Delivered SS")
+            SRss_col      = Sheaders.index("Review SS")
+            SRL_col       = Sheaders.index("Review Link")
+
+            for i, row in enumerate(Sdata_rows, start=2):
+                if row[order_id_index] == order_id:
+                    OrderSheet.update_cell(i, Sstatus_col + 1, "Done")
+                    OrderSheet.update_cell(i, SDss_col + 1, D_url)
+                    OrderSheet.update_cell(i, SRss_col + 1, Review_url)
+                    OrderSheet.update_cell(i, SRL_col + 1, link)
+                    break
+
             return render_template("order_success.html")
     
     if id != 'undefined' :
@@ -575,6 +591,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
