@@ -239,7 +239,7 @@ def Customer_Portal_Dashboard():
     
     RO = 0
     for i in user_orders:
-        if i[2]=="Done":
+        if i[2]=="Done" and i[2]=="Paid":
             RO+=1
     user_orders = user_orders[::-1]
     
@@ -584,6 +584,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
