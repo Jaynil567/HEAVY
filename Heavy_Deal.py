@@ -58,7 +58,7 @@ If you did not request this, ignore this email.
 
 # ---------- DB CONNECTION ----------
 def db():
-    s=psycopg2.connect("postgresql://postgres:412812Jaynil@db.fllykqiwdmqknhbuudua.supabase.co:5432/postgres")
+    s=postgresql://postgres.fllykqiwdmqknhbuudua:412812Jaynil@aws-1-ap-south-1.pooler.supabase.com:5432/postgres
     return s
 
 # ---------- HOME ----------
@@ -580,6 +580,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
