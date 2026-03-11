@@ -58,7 +58,7 @@ If you did not request this, ignore this email.
 
 # ---------- DB CONNECTION ----------
 def db():
-    s=psycopg2.connect("postgresql://postgres.fllykqiwdmqknhbuudua:412812Jaynil@aws-1-ap-south-1.pooler.supabase.com:5432/postgres")
+    s=psycopg2.connect("postgresql://neondb_owner:npg_tYsv8cD9MVAu@ep-rough-grass-a1bedl2d-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
     return s
 
 # ---------- HOME ----------
@@ -580,6 +580,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
