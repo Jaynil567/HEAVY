@@ -57,13 +57,8 @@ If you did not request this, ignore this email.
 
 # ---------- DB CONNECTION ----------
 def db():
-    return mysql.connector.connect(
-        host="centerbeam.proxy.rlwy.net",
-        user="root",
-        password="GZFvMhflsqtzEyFBvPOnNtrapaJWNqhF",
-        database="railway",
-        port=11620
-    )
+    s=psycopg2.connect("postgresql://postgres:412812Jaynil@db.fllykqiwdmqknhbuudua.supabase.co:5432/postgres")
+    return s
 
 # ---------- HOME ----------
 @app.route('/')
@@ -584,6 +579,7 @@ def refundform():
 # ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+
 
 
 
