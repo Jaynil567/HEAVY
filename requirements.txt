@@ -5,3 +5,4 @@ gspread
 oauth2client
 cloudinary
 sendgrid
+psycopg2-binary
