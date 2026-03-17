@@ -446,7 +446,7 @@ def orderform():
             result = cloudinary.uploader.upload(Order_SS)
             url = result['secure_url']
         
-        now = datetime.now().replace(microsecond=0)
+        now = datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
         
         
         data = {
@@ -512,6 +512,8 @@ def refundform():
         Dss_col      = headers.index("Delivered SS")
         Rss_col      = headers.index("Review SS")
         RL_col       = headers.index("Review Link")
+        Refund_time = headers.index("Refund Time")
+        Refund_date = headers.index("Refund Date")
         user_orders = []
 
 
@@ -541,8 +543,8 @@ def refundform():
                 D_url = result['secure_url']
             now = datetime.now().replace(microsecond=0)
 
-            
-
+            now_time = datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%H:%M:%S")
+            now_date = datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y)
 
             for i, row in enumerate(data_rows, start=2):
                 if row[order_id_index] == order_id:
@@ -550,6 +552,8 @@ def refundform():
                     OSheet.update_cell(i, Dss_col + 1, D_url)
                     OSheet.update_cell(i, Rss_col + 1, Review_url)
                     OSheet.update_cell(i, RL_col + 1, link)
+                    OSheet.update_cell(i, Refund_time + 1, now_time)
+                    OSheet.update_cell(i, Refund_date  + 1, now_date)
                     break
 
             Sall_values = SellerO_sheet.get_all_values()
