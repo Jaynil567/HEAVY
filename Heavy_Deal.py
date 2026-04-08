@@ -544,7 +544,7 @@ def refundform():
             now = datetime.now().replace(microsecond=0)
 
             now_time = datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%H:%M:%S")
-            now_date = datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y)
+            now_date = datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y")
 
             for i, row in enumerate(data_rows, start=2):
                 if row[order_id_index] == order_id:
